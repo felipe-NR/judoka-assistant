@@ -2,8 +2,8 @@
 
 Assistente que responde em português do Brasil a perguntas sobre técnicas, história e
 regras do judô, e recusa qualquer outro assunto. Implementa a proposta A de
-[`docs/propostas.md`](docs/propostas.md): o corpus inteiro vai no contexto do Claude, com
-prompt caching, depois de um guardrail de escopo que falha fechado.
+[`docs/propostas.md`](docs/propostas.md): o corpus inteiro vai no contexto do modelo, com
+cache de prompt, depois de um guardrail de escopo que falha fechado.
 
 ## Rodar
 
@@ -12,6 +12,21 @@ uv sync
 cp .env.example .env   # preencha ANTHROPIC_API_KEY
 uv run uvicorn judo_chat.main:app --reload
 ```
+
+Por padrão, o provedor é a Anthropic. Para usar a OpenAI, adicione ao `.env`:
+
+```bash
+JUDO_CHAT_PROVIDER=openai
+OPENAI_API_KEY=...
+```
+
+Nesse modo, os modelos padrão são `gpt-6-luna`. `JUDO_CHAT_ANSWER_MODEL` e
+`JUDO_CHAT_GUARDRAIL_MODEL` permitem escolher outros modelos. A integração usa a
+[Responses API da OpenAI](https://developers.openai.com/api/reference/python): o guardrail
+usa saída estruturada, e a resposta usa cache automático de prefixos. As instruções e o
+corpus ficam antes do histórico e da pergunta, e uma chave estável de cache separa o
+guardrail da resposta. Os logs mostram `cache_read` e `cache_write` para medir os acertos.
+O re-aquecimento é exclusivo da Anthropic; na OpenAI, o cache é administrado pela API.
 
 A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 (`{"query": "como faço o ashi barai?"}`).
@@ -28,7 +43,7 @@ domínio fixo do ngrok da conta (`https://quadrantal-glenda-interstream.ngrok-fr
 ./stop-ngrok.sh    # derruba os dois
 ```
 
-A chave da Anthropic fica só no `.env` local; a página nunca a vê. Com a API desligada, a
+A chave do provedor fica só no `.env` local; a página nunca a vê. Com a API desligada, a
 página carrega mas avisa que não conseguiu falar com o servidor. A conta ngrok gratuita tem
 um túnel por vez: o script se recusa a subir se o túnel de outro projeto (por exemplo o
 `delivery-platform`) estiver no ar. Para usar outra URL de API, crie a variável de
@@ -38,13 +53,12 @@ repositório `JUDO_CHAT_API_URL` e rode o workflow de novo.
 
 1. `normalizer.Recognizer` acha nomes de técnica na pergunta: nome oficial, nome da IJF,
    grafias variadas e nomes populares (ambíguos devolvem todas as candidatas).
-2. `guardrail.Guardrail` classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora`
-   com o Claude Haiku 5.5. Qualquer erro bloqueia a resposta.
-3. `answer.Answerer` chama o Claude Haiku 5.5 com instruções e corpus (~46 mil tokens) num
-   bloco de system cacheado por 1 hora; a pergunta e as técnicas reconhecidas vão na
-   mensagem do usuário.
+2. O guardrail classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora` com o
+   provedor configurado. Qualquer erro bloqueia a resposta.
+3. O provedor configurado responde com instruções e corpus (~46 mil tokens). Na Anthropic,
+   o bloco de system fica cacheado por 1 hora; na OpenAI, o cache de prefixos é automático.
 
-## Custo
+## Custo com Anthropic
 
 Calculado em 2026-10-07 com os tokens medidos na avaliação (effort `low`) e a tabela do
 Haiku 5.5 para prompts de até 100 mil tokens (US$ 0,10/M de entrada, US$ 0,50/M de saída),
@@ -59,9 +73,9 @@ saída, contando o pensamento; o guardrail, ~1.400 de entrada e ~55 de saída.
 | Re-aquecimento (leitura com `max_tokens: 0`) | ~0,0005 | ~0,0023 |
 | Pergunta fora do escopo (só o guardrail) | ~0,0002 | ~0,0009 |
 
-### Re-aquecimento do cache
+### Re-aquecimento do cache da Anthropic
 
-`src/judo_chat/keepalive.py` roda dentro da API. Das 07h às 23h (horário de Brasília), se
+Com `JUDO_CHAT_PROVIDER=anthropic`, `src/judo_chat/keepalive.py` roda dentro da API. Das 07h às 23h (horário de Brasília), se
 ninguém perguntou nos últimos 55 minutos, ele lê o cache com `max_tokens: 0` para renovar o
 TTL de 1 hora. Assim o corpus é gravado uma vez por dia (no primeiro re-aquecimento depois
 das 07h) e de novo só quando o corpus, as instruções ou o modelo mudam; reiniciar a API não
@@ -72,6 +86,7 @@ grava. Custo: ~16 leituras por dia no máximo, ~R$ 0,04. O log mostra cada re-aq
 `JUDO_CHAT_KEEPALIVE_TIMEZONE`.
 
 O Sonnet 5.5 custa 20 vezes o Haiku 5.5 por token; para usá-lo, veja `.env.example`.
+O custo da OpenAI depende dos modelos configurados e aparece nos dados de uso da Responses API.
 
 Detalhes que não passam pelo modelo:
 - **Vídeos:** depois da resposta, o reconhecedor acha as técnicas apresentadas (títulos e

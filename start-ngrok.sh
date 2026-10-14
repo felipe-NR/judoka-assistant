@@ -23,8 +23,25 @@ if pgrep -x ngrok >/dev/null 2>&1; then
 fi
 
 command -v ngrok >/dev/null 2>&1 || { echo "ngrok não encontrado no PATH." >&2; exit 1; }
-if [ ! -f "$ROOT_DIR/.env" ] || ! grep -q '^ANTHROPIC_API_KEY=.\+' "$ROOT_DIR/.env"; then
-  echo "Preencha ANTHROPIC_API_KEY em .env (veja .env.example)." >&2
+if [ ! -f "$ROOT_DIR/.env" ]; then
+  echo "Crie .env a partir de .env.example e preencha a chave do provedor." >&2
+  exit 1
+fi
+PROVIDER=$(sed -n 's/^JUDO_CHAT_PROVIDER=//p' "$ROOT_DIR/.env" | tail -n 1)
+case "${PROVIDER:-anthropic}" in
+  anthropic)
+    KEY_NAME="ANTHROPIC_API_KEY"
+    ;;
+  openai)
+    KEY_NAME="OPENAI_API_KEY"
+    ;;
+  *)
+    echo "JUDO_CHAT_PROVIDER deve ser anthropic ou openai." >&2
+    exit 1
+    ;;
+esac
+if ! grep -q "^${KEY_NAME}=.\+" "$ROOT_DIR/.env"; then
+  echo "Preencha ${KEY_NAME} em .env (veja .env.example)." >&2
   exit 1
 fi
 
