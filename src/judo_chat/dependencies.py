@@ -2,10 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from judo_chat.answer import Answerer
 from judo_chat.corpus.models import Corpus
-from judo_chat.guardrail import Guardrail
 from judo_chat.normalizer import Recognizer
+from judo_chat.providers import AnswerProvider, GuardrailProvider
 
 
 def get_corpus(request: Request) -> Corpus:
@@ -16,15 +15,15 @@ def get_recognizer(request: Request) -> Recognizer:
     return request.app.state.recognizer
 
 
-def get_guardrail(request: Request) -> Guardrail:
+def get_guardrail(request: Request) -> GuardrailProvider:
     return request.app.state.guardrail
 
 
-def get_answerer(request: Request) -> Answerer:
+def get_answerer(request: Request) -> AnswerProvider:
     return request.app.state.answerer
 
 
 CorpusDep = Annotated[Corpus, Depends(get_corpus)]
 RecognizerDep = Annotated[Recognizer, Depends(get_recognizer)]
-GuardrailDep = Annotated[Guardrail, Depends(get_guardrail)]
-AnswererDep = Annotated[Answerer, Depends(get_answerer)]
+GuardrailDep = Annotated[GuardrailProvider, Depends(get_guardrail)]
+AnswererDep = Annotated[AnswerProvider, Depends(get_answerer)]

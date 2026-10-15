@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.115",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
+    "openai>=2.0",
     "pyyaml>=6.0",
     "uvicorn>=0.32",
 ]
@@ -38,5 +39,5 @@ select = ["E", "F", "B", "UP", "I"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-markers = ["eval: chama a API da Anthropic de verdade (custa dinheiro)"]
+markers = ["eval: chama a API do provedor configurado de verdade (custa dinheiro)"]
 addopts = "-m 'not eval'"

@@ -11,21 +11,18 @@ import unicodedata
 from pathlib import Path
 
 import pytest
-from anthropic import AsyncAnthropic
 
-from judo_chat.answer import Answerer, Turn
+from judo_chat.answer import Turn
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
-from judo_chat.guardrail import Guardrail
 from judo_chat.normalizer import Recognizer
-from judo_chat.relations import Relations
+from judo_chat.providers import AnswerProvider, GuardrailProvider, create_providers
 
 from .cases import Case, load_cases
 
-pytestmark = [
-    pytest.mark.eval,
-    pytest.mark.skipif(not os.environ.get("ANTHROPIC_API_KEY"), reason="ANTHROPIC_API_KEY não definida"),
-]
+_PROVIDER = Settings().provider
+_KEY_NAME = "OPENAI_API_KEY" if _PROVIDER == "openai" else "ANTHROPIC_API_KEY"
+pytestmark = [pytest.mark.eval, pytest.mark.skipif(not os.environ.get(_KEY_NAME), reason=f"{_KEY_NAME} não definida")]
 REPORT = Path(__file__).with_name("report.json")
 CONCURRENCY = 4
 
@@ -36,7 +33,7 @@ def _fold(text: str) -> str:
 
 
 async def _run_case(
-    case: Case, guardrail: Guardrail, answerer: Answerer, recognizer: Recognizer, corpus: Corpus
+    case: Case, guardrail: GuardrailProvider, answerer: AnswerProvider, recognizer: Recognizer, corpus: Corpus
 ) -> dict[str, object]:
     history = [Turn(role=t.role, text=t.text) for t in case.historico]
     matches = recognizer.find(case.pergunta)
@@ -51,6 +48,8 @@ async def _run_case(
         "guardrail": verdict.category,
         "guardrail_falhou": verdict.failed,
     }
+    if verdict.probabilities is not None:
+        row["probabilidades"] = verdict.probabilities
     if verdict.allowed and case.categoria != "fora":
         answer = await answerer.answer(case.pergunta, matches, history)
         folded = _fold(answer.text)
@@ -64,15 +63,9 @@ async def test_eval(corpus: Corpus, recognizer: Recognizer) -> None:
     settings = Settings()
     cases = load_cases()
     semaphore = asyncio.Semaphore(CONCURRENCY)
-    async with AsyncAnthropic() as client:
-        guardrail = Guardrail(
-            client,
-            settings.guardrail_model,
-            settings.guardrail_timeout_s,
-            effort=settings.guardrail_effort,
-            max_tokens=settings.guardrail_max_tokens,
-        )
-        answerer = Answerer(client, settings, corpus, Relations(corpus, recognizer))
+    async with create_providers(settings, corpus, recognizer) as providers:
+        guardrail = providers.guardrail
+        answerer = providers.answerer
         # Uma primeira resposta grava o cache antes das chamadas paralelas.
         await answerer.answer("O que é kuzushi?", recognizer.find("O que é kuzushi?"))
 

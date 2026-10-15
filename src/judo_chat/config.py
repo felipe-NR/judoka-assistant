@@ -13,11 +13,17 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="JUDO_CHAT_", env_file=".env", extra="ignore", frozen=True)
 
     data_dir: Path = _ROOT / "data"
+    provider: Literal["anthropic", "openai"] = "anthropic"
     guardrail_model: str = "claude-haiku-5-5"
     # O pensamento do Haiku 5.5 vem ligado e conta no max_tokens: com 300 a classificação
     # podia acabar antes do JSON.
     guardrail_effort: Literal["low", "medium", "high"] = "low"
     guardrail_max_tokens: int = 1024
+    # Só na OpenAI: "decisions" classifica pela Decisions API (paga só a entrada, devolve
+    # probabilidades). Bloqueia se P(fora) ou P(pedido de agressão) passar do limite.
+    guardrail_api: Literal["responses", "decisions"] = "responses"
+    guardrail_fora_threshold: float = 0.5
+    guardrail_harm_threshold: float = 0.5
     # Haiku 5.5: o modelo mais barato disponível (US$ 0,10/M de entrada e US$ 0,50/M de saída
     # com prompt de até 100 mil tokens). Para mais qualidade, use claude-sonnet-5-5 com
     # JUDO_CHAT_ANSWER_EFFORT=low e JUDO_CHAT_USE_REFUSAL_FALLBACKS=true.
@@ -46,6 +52,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _fallbacks_need_a_supported_model(self) -> Self:
+        if self.provider == "openai":
+            if self.guardrail_model == "claude-haiku-5-5":
+                object.__setattr__(self, "guardrail_model", "gpt-6-luna")
+            if self.answer_model == "claude-haiku-5-5":
+                object.__setattr__(self, "answer_model", "gpt-6-luna")
+        if self.provider != "openai" and self.guardrail_api == "decisions":
+            raise ValueError("JUDO_CHAT_GUARDRAIL_API=decisions só vale para a OpenAI")
+        if self.provider == "openai" and self.use_refusal_fallbacks:
+            raise ValueError("JUDO_CHAT_USE_REFUSAL_FALLBACKS só vale para a Anthropic")
         if self.use_refusal_fallbacks and self.answer_model.startswith("claude-haiku"):
             raise ValueError("JUDO_CHAT_USE_REFUSAL_FALLBACKS não vale para o Haiku, que não tem fallback no servidor")
         return self
