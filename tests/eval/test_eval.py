@@ -11,6 +11,7 @@ import unicodedata
 from pathlib import Path
 
 import pytest
+
 from judo_chat.answer import Turn
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
@@ -47,6 +48,8 @@ async def _run_case(
         "guardrail": verdict.category,
         "guardrail_falhou": verdict.failed,
     }
+    if verdict.probabilities is not None:
+        row["probabilidades"] = verdict.probabilities
     if verdict.allowed and case.categoria != "fora":
         answer = await answerer.answer(case.pergunta, matches, history)
         folded = _fold(answer.text)

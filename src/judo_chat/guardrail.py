@@ -70,6 +70,8 @@ class GuardrailResult(BaseModel):
     category: Category
     reason: str
     failed: bool = False
+    # Só o guardrail da Decisions API devolve probabilidades; servem para calibrar os limites.
+    probabilities: dict[str, float] | None = None
 
     @property
     def allowed(self) -> bool:

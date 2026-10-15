@@ -28,6 +28,16 @@ corpus ficam antes do histórico e da pergunta, e uma chave estável de cache se
 guardrail da resposta. Os logs mostram `cache_read` e `cache_write` para medir os acertos.
 O re-aquecimento é exclusivo da Anthropic; na OpenAI, o cache é administrado pela API.
 
+Com `JUDO_CHAT_GUARDRAIL_API=decisions`, o guardrail usa a
+[Decisions API](https://developers.openai.com/api/docs/guides/decisions), em beta, que
+cobra só a entrada e devolve probabilidades em vez de texto. Ele faz duas perguntas na
+mesma chamada: a categoria e se a pergunta pede ajuda para agredir alguém fora do judô. A
+pergunta é bloqueada se a categoria for `fora`, se `P(fora)` passar de
+`JUDO_CHAT_GUARDRAIL_FORA_THRESHOLD` ou se `P(agressão)` passar de
+`JUDO_CHAT_GUARDRAIL_HARM_THRESHOLD` (ambos 0,5). Na avaliação de 2026-10-14, a latência
+mediana caiu de ~4 s para ~0,4 s. Como o modelo não raciocina, ele recusa termos de
+arbitragem que a pergunta não liga ao judô (por exemplo "o que significa matte?").
+
 A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 (`{"query": "como faço o ashi barai?"}`).
 

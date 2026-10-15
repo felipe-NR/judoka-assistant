@@ -13,7 +13,7 @@ from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
 from judo_chat.guardrail import Guardrail, GuardrailResult
 from judo_chat.normalizer import Match, Recognizer
-from judo_chat.openai_provider import OpenAIAnswerer, OpenAIGuardrail
+from judo_chat.openai_provider import OpenAIAnswerer, OpenAIDecisionsGuardrail, OpenAIGuardrail
 from judo_chat.relations import Relations
 
 
@@ -54,13 +54,21 @@ async def create_providers(settings: Settings, corpus: Corpus, recognizer: Recog
             )
         return
     async with AsyncOpenAI() as client:
-        yield Providers(
-            guardrail=OpenAIGuardrail(
+        guardrail: GuardrailProvider
+        if settings.guardrail_api == "decisions":
+            guardrail = OpenAIDecisionsGuardrail(
+                client,
+                settings.guardrail_model,
+                settings.guardrail_timeout_s,
+                fora_threshold=settings.guardrail_fora_threshold,
+                harm_threshold=settings.guardrail_harm_threshold,
+            )
+        else:
+            guardrail = OpenAIGuardrail(
                 client,
                 settings.guardrail_model,
                 settings.guardrail_timeout_s,
                 effort=settings.guardrail_effort,
                 max_tokens=settings.guardrail_max_tokens,
-            ),
-            answerer=OpenAIAnswerer(client, settings, corpus, relations),
-        )
+            )
+        yield Providers(guardrail=guardrail, answerer=OpenAIAnswerer(client, settings, corpus, relations))
