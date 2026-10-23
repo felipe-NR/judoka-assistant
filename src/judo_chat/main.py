@@ -15,6 +15,7 @@ from judo_chat.errors import register_error_handlers
 from judo_chat.keepalive import CacheKeepAlive
 from judo_chat.normalizer import Recognizer
 from judo_chat.providers import create_providers
+from judo_chat.question_rate_limit import QuestionRateLimiter
 from judo_chat.routers.ask import router as ask_router
 
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +43,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.recognizer = recognizer
         app.state.guardrail = providers.guardrail
         app.state.answerer = providers.answerer
+        app.state.question_rate_limiter = QuestionRateLimiter(
+            per_ip_per_minute=settings.question_limit_per_ip_per_minute,
+            per_ip_per_day=settings.question_limit_per_ip_per_day,
+            global_per_day=settings.question_limit_global_per_day,
+            max_tracked_ips=settings.question_limit_max_tracked_ips,
+        )
         task = None
         if settings.keepalive_enabled and settings.provider == "anthropic":
             keepalive = CacheKeepAlive(
@@ -70,5 +77,12 @@ app.add_middleware(
 )
 register_error_handlers(app)
 app.include_router(ask_router)
-# Depois das rotas da API: serve index.html e config.js na raiz.
-app.mount("/", StaticFiles(directory=_STATIC, html=True), name="static")
+
+
+def mount_chat_page(target: FastAPI) -> None:
+    # Depois das rotas da API: serve index.html e config.js na raiz.
+    target.mount("/", StaticFiles(directory=_STATIC, html=True), name="static")
+
+
+if get_settings().serve_chat_page:
+    mount_chat_page(app)
