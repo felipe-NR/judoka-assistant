@@ -2,68 +2,126 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2b63">
 <title>Judô Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
 <style>
+  /* Tatame verde no fundo, judogi branco e azul por cima. A trama do judogi fica só onde não
+     há texto corrido (cabeçalho, gola das respostas, caixa do filtro). */
   :root {
-    --bg: #f6f4ef; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6860;
-    --accent: #1f4e8c; --user: #e6edf7; --border: #dcd8ce; --refused: #fbefe6;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #151515; --surface: #1f1f1f; --text: #eceae4; --muted: #a29f97;
-      --accent: #8fb3e8; --user: #233247; --border: #333; --refused: #3a2a20;
-    }
+    --mat: #2d6e4a; --seam: #245c3d; --blue: #1e2b63; --stitch: #a3aedb; --white: #ffffff;
+    --ink: #16231c; --muted: #4f5a66; --line: #e3e6ee; --hinomaru: #d23b33;
+    --weave-blue: repeating-linear-gradient(-45deg, rgba(255,255,255,.07) 0 1px, transparent 1px 4px);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 16px; min-height: 100vh;
-         display: flex; flex-direction: column; }
-  header h1 { font-size: 1.3rem; margin: 8px 0 2px; }
-  header p { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
-  #log { flex: 1; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
-  .msg { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
-         background: var(--surface); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .msg.user { background: var(--user); align-self: flex-end; max-width: 85%; }
-  .msg.bot, .msg.refused { white-space: normal; }
+  body { margin: 0; color: var(--ink); font: 400 17px/1.55 "Atkinson Hyperlegible", system-ui, sans-serif;
+         background-color: var(--mat);
+         /* placas de 1 x 2 m */
+         background-image: linear-gradient(var(--seam) 2px, transparent 2px), linear-gradient(90deg, var(--seam) 2px, transparent 2px);
+         background-size: 96px 192px; background-attachment: fixed; }
+  main { max-width: 640px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  header { position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; justify-content: space-between;
+           padding: 18px 16px 12px; background: var(--weave-blue) var(--blue); color: #eef1f8; }
+  h1 { margin: 0; font: 800 1.35rem "Shippori Mincho B1", serif; }
+  header span { font: 600 1rem "Shippori Mincho B1", serif; color: var(--stitch); }
+
+  #log { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 20px 12px; }
+  .intro { margin: 0; color: var(--white); max-width: 34ch; }
+  /* O cabeçalho e o rodapé ficam fixos; a rolagem para cada mensagem desconta os dois. */
+  .msg { overflow-wrap: anywhere; scroll-margin: 76px 0 180px; }
+  .msg.user { align-self: flex-end; max-width: 85%; padding: 10px 16px; border-radius: 18px 18px 4px 18px;
+              background: var(--blue); color: var(--white); font-weight: 700; white-space: pre-wrap; }
+
+  /* Resposta: folha branca lisa com a gola de judogi azul no alto. */
+  .msg.bot { padding: 26px 16px 16px; border-radius: 8px;
+       background: var(--weave-blue) top / 100% 10px no-repeat, linear-gradient(var(--blue), var(--blue)) top / 100% 10px no-repeat, var(--white); }
+  .msg.bot.has-kanji { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 14px; padding-left: 12px; }
+  .kanji { align-self: start; justify-self: start; writing-mode: vertical-rl; text-orientation: upright;
+       font: 800 2.2rem/1 "Shippori Mincho B1", serif; letter-spacing: .08em; color: var(--blue);
+       padding-right: 10px; border-right: 2px solid #d5dbef; }
   .msg.bot p, .msg.bot ul, .msg.bot ol { margin: 0 0 10px; }
-  .msg.bot h3 { font-size: 1.05rem; margin: 4px 0 10px; }
-  .msg.bot ul, .msg.bot ol { padding-left: 22px; }
-  .msg.bot hr { border: 0; border-top: 1px solid var(--border); margin: 12px 0; }
-  .videos { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .videos strong { display: block; margin-bottom: 6px; font-size: .9rem; }
-  .videos a { display: block; margin: 4px 0; }
-  .video-inline { margin: 4px 0 10px; font-size: .9rem; }
-  .video-inline a { margin-right: 12px; }
-  .badge { font-size: .75rem; padding: 1px 6px; border-radius: 6px; margin-right: 6px;
-           background: var(--accent); color: var(--bg); }
-  .msg.refused { background: var(--refused); }
-  .tags { margin-top: 8px; font-size: .8rem; color: var(--muted); }
-  form { display: flex; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; }
-  textarea { flex: 1; resize: vertical; min-height: 48px; padding: 10px; font: inherit;
-             border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
-  button { padding: 0 18px; font: inherit; border: 0; border-radius: 8px;
-           background: var(--accent); color: var(--bg); cursor: pointer; }
-  button:disabled { opacity: .5; cursor: wait; }
-  a { color: var(--accent); }
+  .msg.bot h3 { margin: 4px 0 8px; font: 800 1.4rem/1.2 "Shippori Mincho B1", serif; color: var(--blue); }
+  .msg.bot > .body > h3:first-child { margin-top: 0; font-size: 1.65rem; }
+  .msg.bot ul { padding-left: 22px; }
+  .msg.bot ol { list-style: none; padding: 0; counter-reset: s; }
+  .msg.bot ol > li { counter-increment: s; position: relative; padding: 10px 0 10px 42px; }
+  .msg.bot ol > li + li { border-top: 1px solid var(--line); }
+  .msg.bot ol > li::before { content: counter(s); position: absolute; left: 0; top: 8px; width: 32px; height: 32px;
+       border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--blue); background: var(--white);
+       color: var(--blue); font: 800 1rem "Shippori Mincho B1", serif; }
+  .msg.bot strong { color: var(--blue); }
+  .msg.bot hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+  .msg.bot a { color: var(--blue); }
+
+  .video-inline, .videos { display: grid; gap: 6px; margin: 8px 0 12px; }
+  .videos strong { font: 800 1.05rem "Shippori Mincho B1", serif; }
+  .msg.bot a.video { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; border-radius: 8px;
+       border: 2px solid var(--blue); color: var(--blue); text-decoration: none; font-weight: 700; line-height: 1.3; }
+  .msg.bot a.video.kodokan { background: var(--blue); color: var(--white); }
+  .video svg { flex: 0 0 auto; }
+  .tags { grid-column: 1 / -1; margin-top: 4px; font-size: .82rem; color: var(--muted); }
+
+  /* Recusa e erro: o "matte" do árbitro, com o círculo vermelho. */
+  .msg.refused { display: flex; gap: 14px; align-items: center; padding: 24px 16px 14px; border-radius: 8px;
+       background: var(--weave-blue) top / 100% 10px no-repeat, linear-gradient(var(--blue), var(--blue)) top / 100% 10px no-repeat, var(--white); }
+  .mark { flex: 0 0 36px; height: 36px; border-radius: 50%; background: var(--hinomaru); }
+  .msg.refused strong { display: block; font: 800 1.25rem "Shippori Mincho B1", serif; color: var(--blue); }
+  .msg.refused p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+  .dock { position: sticky; bottom: 0; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+       background: linear-gradient(to bottom, rgba(45,110,74,0), var(--mat) 18px); }
+  .topics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; padding: 4px;
+       border-radius: 14px; background: var(--weave-blue) var(--blue); box-shadow: 0 2px 0 var(--seam); }
+  .topics button { min-height: 60px; padding: 6px 0 8px; border: 0; border-radius: 10px; background: transparent;
+       color: #c3cae6; font: 700 .9rem "Atkinson Hyperlegible", sans-serif; cursor: pointer;
+       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .topics i { font: 800 1.45rem/1 "Shippori Mincho B1", serif; font-style: normal; }
+  .topics button[aria-pressed="true"] { background: var(--white); color: var(--blue); }
+  form { display: flex; gap: 8px; align-items: flex-end; }
+  textarea { flex: 1; min-height: 52px; max-height: 140px; resize: none; padding: 14px 16px; border: 0;
+       border-radius: 26px; background: var(--white); color: var(--ink); font: inherit; font-size: 1rem;
+       box-shadow: 0 2px 0 var(--seam); }
+  textarea::placeholder { color: #6b7590; }
+  form button { flex: 0 0 52px; height: 52px; padding: 0; border: 2px solid var(--blue); border-radius: 50%;
+       background: var(--white); color: var(--blue); cursor: pointer; display: grid; place-items: center;
+       box-shadow: 0 2px 0 var(--seam); }
+  form button:disabled { opacity: .5; cursor: wait; }
+  :focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
+  .msg :focus-visible { outline-color: var(--blue); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>
 </head>
 <body>
 <main>
   <header>
     <h1>Judô Chat</h1>
-    <p>Pergunte sobre técnicas, história e regras do judô.</p>
+    <span lang="ja">柔道</span>
   </header>
-  <section id="log" aria-live="polite"></section>
-  <form id="form">
-    <textarea id="query" maxlength="1000" placeholder="Ex.: Qual a diferença entre seoi-nage e ippon-seoi-nage?" required></textarea>
-    <button id="send" type="submit">Enviar</button>
-  </form>
+  <section id="log" aria-live="polite">
+    <p class="intro">Pergunte sobre técnicas, regras e história do judô.</p>
+  </section>
+  <div class="dock">
+    <nav class="topics" role="group" aria-label="Assunto">
+      <button type="button" aria-pressed="true" data-example="Ex.: como entro no uchi-mata?"><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
+      <button type="button" aria-pressed="false" data-example="Ex.: o que dá shido?"><i lang="ja" aria-hidden="true">規</i>Regras</button>
+      <button type="button" aria-pressed="false" data-example="Ex.: quem foi Jigoro Kano?"><i lang="ja" aria-hidden="true">歴</i>História</button>
+    </nav>
+    <form id="form">
+      <label for="query" class="sr">Sua pergunta</label>
+      <textarea id="query" rows="1" maxlength="1000" placeholder="Ex.: como entro no uchi-mata?" required></textarea>
+      <button id="send" type="submit" aria-label="Perguntar">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+  </div>
 </main>
 <script src="config.js"></script>
 <script>
-  // Vazio quando a página é servida pela própria API; no GitHub Pages, a URL do túnel ngrok.
+  // Vazio quando a página é servida pela própria API; no GitHub Pages, a URL pública da API.
   const API_URL = (window.JUDO_CHAT_API_URL || "").replace(/\/$/, "");
   const log = document.getElementById("log");
   const form = document.getElementById("form");
@@ -110,23 +168,22 @@
     return html.join("");
   }
 
+  const PLAY = '<svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3.5v11l9-5.5z" fill="currentColor"/></svg>';
+
   function videoLink(video, label) {
     const a = document.createElement("a");
     a.href = video.url; a.target = "_blank"; a.rel = "noopener";
-    if (video.kodokan) {
-      const badge = document.createElement("span");
-      badge.className = "badge"; badge.textContent = "Kodokan";
-      a.appendChild(badge);
-    }
-    a.appendChild(document.createTextNode(label + (video.kodokan ? " (vídeo oficial)" : " (outra fonte)")));
+    a.className = "video" + (video.kodokan ? " kodokan" : "");
+    a.innerHTML = PLAY;
+    a.appendChild(document.createTextNode(label + (video.kodokan ? ": vídeo oficial do Kodokan" : ": vídeo de outra fonte")));
     return a;
   }
 
   // Põe os vídeos de cada técnica logo abaixo do título ou item onde ela é apresentada; os
   // grupos sem lugar na resposta vão para o bloco "Vídeos" no fim.
-  function placeVideos(div, groups) {
+  function placeVideos(body, groups) {
     const leftovers = [];
-    const candidates = Array.from(div.querySelectorAll("h3, li, p"));
+    const candidates = Array.from(body.querySelectorAll("h3, li, p"));
     for (const group of groups || []) {
       const anchor = group.anchor && group.anchor.toLowerCase();
       const target = anchor && candidates.find((el) => el.textContent.toLowerCase().includes(anchor));
@@ -145,18 +202,35 @@
     for (const group of leftovers) {
       for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
     }
-    div.appendChild(box);
+    body.appendChild(box);
   }
 
-  function addMessage(text, kind, tags, groups) {
+  function addUser(text) {
     const div = document.createElement("div");
-    div.className = "msg " + kind;
-    if (kind === "user") {
-      div.textContent = text;
-    } else {
-      div.innerHTML = renderMarkdown(text);
-      placeVideos(div, groups);
+    div.className = "msg user";
+    div.textContent = text;
+    log.appendChild(div);
+    div.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+
+  // O kanji vai na coluna ao lado só quando a resposta apresenta uma técnica: com várias,
+  // a coluna não diria de qual delas é.
+  function addAnswer(text, tags, groups) {
+    const div = document.createElement("article");
+    div.className = "msg bot";
+    const anchored = (groups || []).filter((g) => g.anchor);
+    if (anchored.length === 1 && anchored[0].kanji) {
+      const kanji = document.createElement("div");
+      kanji.className = "kanji"; kanji.lang = "ja"; kanji.setAttribute("aria-hidden", "true");
+      kanji.textContent = anchored[0].kanji;
+      div.classList.add("has-kanji");
+      div.appendChild(kanji);
     }
+    const body = document.createElement("div");
+    body.className = "body";
+    body.innerHTML = renderMarkdown(text);
+    placeVideos(body, groups);
+    div.appendChild(body);
     if (tags) {
       const small = document.createElement("div");
       small.className = "tags";
@@ -164,8 +238,26 @@
       div.appendChild(small);
     }
     log.appendChild(div);
+    div.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function addStop(title, text) {
+    const div = document.createElement("div");
+    div.className = "msg refused";
+    div.setAttribute("role", "note");
+    div.innerHTML = '<span class="mark" aria-hidden="true"></span><div><strong></strong><p></p></div>';
+    div.querySelector("strong").textContent = title;
+    div.querySelector("p").textContent = text;
+    log.appendChild(div);
     div.scrollIntoView({ behavior: "smooth", block: "end" });
   }
+
+  // O filtro só troca o exemplo do campo; a API não recebe o assunto.
+  document.querySelectorAll(".topics button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".topics button").forEach((o) => o.setAttribute("aria-pressed", o === b));
+    input.placeholder = b.dataset.example;
+    input.focus();
+  }));
 
   // Últimas trocas da conversa, enviadas a cada pergunta (o servidor não guarda estado).
   const MAX_TURNS = 6;
@@ -176,7 +268,9 @@
     event.preventDefault();
     const query = input.value.trim();
     if (!query) return;
-    addMessage(query, "user");
+    const intro = log.querySelector(".intro");
+    if (intro) intro.remove();
+    addUser(query);
     input.value = "";
     button.disabled = true;
     try {
@@ -188,20 +282,22 @@
       });
       const data = await response.json();
       if (!response.ok) {
-        addMessage(data.detail || "Erro ao responder.", "refused");
+        addStop("Sem resposta", data.detail || "Erro ao responder.");
+        return;
+      }
+      if (data.refused) {
+        addStop("Matte", data.answer);
         return;
       }
       const found = data.techniques_detected.map((t) => t.term + (t.ambiguous ? " (ambíguo)" : ""));
       const tags = found.length ? "Técnicas reconhecidas: " + found.join(", ") : "";
-      addMessage(data.answer, data.refused ? "refused" : "bot", tags, data.video_groups);
-      if (!data.refused) {
-        history = history.concat([
-          { role: "usuario", text: query },
-          { role: "assistente", text: data.answer.slice(0, MAX_TURN_CHARS) },
-        ]).slice(-MAX_TURNS);
-      }
+      addAnswer(data.answer, tags, data.video_groups);
+      history = history.concat([
+        { role: "usuario", text: query },
+        { role: "assistente", text: data.answer.slice(0, MAX_TURN_CHARS) },
+      ]).slice(-MAX_TURNS);
     } catch (error) {
-      addMessage("Não foi possível falar com o servidor. Ele pode estar desligado.", "refused");
+      addStop("Sem resposta", "Não foi possível falar com o servidor. Ele pode estar desligado.");
     } finally {
       button.disabled = false;
       input.focus();
