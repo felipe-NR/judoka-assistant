@@ -62,6 +62,13 @@ jobs:
           ssh-keyscan -T 15 "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -i ~/.ssh/deploy -o BatchMode=yes "judoka-deploy@$DEPLOY_HOST" "$GITHUB_SHA"
 
+  # Fica num job à parte porque, dentro da tailnet, o MagicDNS resolve o nome da VM para o IP
+  # da tailnet, onde o tag:ci só alcança a porta 22. Fora dela, o nome vai para o Funnel,
+  # como para qualquer visitante (run 40030107154, 2026-10-23).
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
       # Preflight de CORS: passa pelo Funnel e pela aplicação sem chamar o provedor nem
       # contar no rate limit.
       - name: Conferir a URL pública
