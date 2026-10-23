@@ -140,6 +140,17 @@ class Corpus(_Frozen):
     # data/glossario/variantes_digitacao.yaml: palavra digitada -> palavra entendida.
     typo_variants: tuple[tuple[str, str], ...] = ()
 
+    def document(self, document_id: str) -> Document:
+        for document in self.documents:
+            if document.id == document_id:
+                return document
+        raise KeyError(document_id)
+
+    def rule_term_label(self, term: RuleTerm) -> str:
+        """Termo com o título do documento que o explica: sem ele, um classificador que não vê
+        o corpus não liga "matte" ao judô."""
+        return f'{term.termo} (termo do judô em "{self.document(term.documento).title}")'
+
     def technique(self, technique_id: str) -> Technique:
         for technique in self.techniques:
             if technique.id == technique_id:

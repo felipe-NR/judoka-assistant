@@ -47,7 +47,7 @@ async def ask(
         f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text[:_GUARDRAIL_TURN_CHARS]}"
         for t in history[-_GUARDRAIL_TURNS:]
     ]
-    terms = recognizer.find_terms(body.query)
+    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(body.query)]
     verdict = await guardrail.classify(body.query, guardrail_history, technique_names, terms)
     if not verdict.allowed:
         # Falha do guardrail também bloqueia a resposta, mas sem dizer que a pergunta saiu do escopo.

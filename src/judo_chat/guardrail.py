@@ -42,9 +42,9 @@ Pode vir também:
   digitação. Eles indicam que a pergunta é de judô. A exceção é o pedido de como executar
   a técnica dentro de outra arte marcial (por exemplo, numa luta de MMA): esse continua fora.
 - <termos_reconhecidos>: termos de regras, arbitragem ou graduação do judô achados na
-  pergunta (pontuações, comandos do árbitro, punições, posturas e saudações dos exames). A
-  base do assistente explica esses termos: uma pergunta sobre o significado, o uso ou a
-  história de um deles é de regras.
+  pergunta (pontuações, comandos do árbitro, punições, posturas e saudações dos exames),
+  cada um com o documento da base que o explica. Uma pergunta sobre o significado, o uso ou
+  a história de um deles é de regras.
 
 Perguntar qual é, no judô, a técnica equivalente a um nome de outra arte marcial (jiu-jitsu,
 BJJ, wrestling) é pergunta de técnica de judô.

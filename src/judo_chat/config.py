@@ -20,10 +20,12 @@ class Settings(BaseSettings):
     guardrail_effort: Literal["low", "medium", "high"] = "low"
     guardrail_max_tokens: int = 1024
     # Só na OpenAI: "decisions" classifica pela Decisions API (paga só a entrada, devolve
-    # probabilidades). Bloqueia se P(fora) ou P(pedido de agressão) passar do limite.
+    # probabilidades). Bloqueia se P(fora), P(pedido de agressão) ou P(pedido para mudar as
+    # instruções) passar do limite.
     guardrail_api: Literal["responses", "decisions"] = "responses"
     guardrail_fora_threshold: float = 0.5
     guardrail_harm_threshold: float = 0.5
+    guardrail_instructions_threshold: float = 0.5
     # Haiku 5.5: o modelo mais barato disponível (US$ 0,10/M de entrada e US$ 0,50/M de saída
     # com prompt de até 100 mil tokens). Para mais qualidade, use claude-sonnet-5-5 com
     # JUDO_CHAT_ANSWER_EFFORT=low e JUDO_CHAT_USE_REFUSAL_FALLBACKS=true.

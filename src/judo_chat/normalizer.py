@@ -9,7 +9,7 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Literal
 
-from judo_chat.corpus.models import Corpus
+from judo_chat.corpus.models import Corpus, RuleTerm
 
 MatchType = Literal["oficial", "ijf", "grafia", "popular", "pt_br", "variante"]
 
@@ -95,7 +95,7 @@ class Recognizer:
             self._add(popular.name, Entry(popular.technique_ids, "popular", popular.name))
         # Termos de regras casam pela grafia, sem a canonização das técnicas: com ela, "mate"
         # (a erva) seria o comando "matte".
-        self._terms = {literal(term.termo): term.termo for term in corpus.rule_terms}
+        self._terms = {literal(term.termo): term for term in corpus.rule_terms}
 
     def _add(self, name: str, entry: Entry) -> None:
         key = canonical(name)
@@ -156,10 +156,10 @@ class Recognizer:
             position += size
         return matches
 
-    def find_terms(self, text: str) -> list[str]:
+    def find_terms(self, text: str) -> list[RuleTerm]:
         """Termos de regras, arbitragem e graduação no texto, do mais longo para o mais curto."""
         tokens = tokenize(text)
-        found: list[str] = []
+        found: list[RuleTerm] = []
         position = 0
         while position < len(tokens):
             for size in range(min(_MAX_WINDOW, len(tokens) - position), 0, -1):

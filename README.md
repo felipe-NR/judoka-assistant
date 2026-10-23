@@ -33,15 +33,19 @@ ao padrão.
 
 Com `JUDO_CHAT_GUARDRAIL_API=decisions`, o guardrail usa a
 [Decisions API](https://developers.openai.com/api/docs/guides/decisions), que cobra só a
-entrada e devolve probabilidades em vez de texto. Ele faz duas perguntas na
-mesma chamada: a categoria e se a pergunta pede ajuda para agredir alguém fora do judô. A
-pergunta é bloqueada se a categoria for `fora`, se `P(fora)` passar de
-`JUDO_CHAT_GUARDRAIL_FORA_THRESHOLD` ou se `P(agressão)` passar de
-`JUDO_CHAT_GUARDRAIL_HARM_THRESHOLD` (ambos 0,5). Na avaliação de 2026-10-14, a latência
+entrada e devolve probabilidades em vez de texto. Ele faz três perguntas na
+mesma chamada: a categoria, se a pergunta pede ajuda para agredir alguém fora do judô e se
+ela tenta mudar as instruções do assistente. A pergunta é bloqueada se a categoria for
+`fora` ou se `P(fora)`, `P(agressão)` ou `P(instruções)` passar do limite
+(`JUDO_CHAT_GUARDRAIL_FORA_THRESHOLD`, `JUDO_CHAT_GUARDRAIL_HARM_THRESHOLD` e
+`JUDO_CHAT_GUARDRAIL_INSTRUCTIONS_THRESHOLD`, todos 0,5). Na avaliação de 2026-10-14, a latência
 mediana caiu de ~4 s para ~0,4 s. Como o modelo não raciocina nem vê o corpus, ele recusava
 termos de arbitragem que a pergunta não liga ao judô (as 4 falsas recusas daquela avaliação).
 Por isso o reconhecedor também acha os termos de `data/glossario/termos_regras.yaml` e os
-envia ao guardrail em `<termos_reconhecidos>`.
+envia ao guardrail em `<termos_reconhecidos>`, cada um com o título do documento que o
+explica; só o nome do termo não bastou. Como uma injeção que cita um termo podia passar como
+`regras`, entrou a pergunta sobre mudar as instruções. Na avaliação de 2026-10-23, a falsa
+recusa caiu de 3,1% para 0%, com recusa correta de 100% e nenhum falso aceite adversarial.
 
 A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 (`{"query": "como faço o ashi barai?"}`).

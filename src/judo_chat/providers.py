@@ -62,6 +62,7 @@ async def create_providers(settings: Settings, corpus: Corpus, recognizer: Recog
                 settings.guardrail_timeout_s,
                 fora_threshold=settings.guardrail_fora_threshold,
                 harm_threshold=settings.guardrail_harm_threshold,
+                instructions_threshold=settings.guardrail_instructions_threshold,
             )
         else:
             guardrail = OpenAIGuardrail(

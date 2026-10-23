@@ -111,4 +111,4 @@ def test_typo_variants_are_flagged(recognizer: Recognizer) -> None:
     ],
 )
 def test_find_terms(recognizer: Recognizer, query: str, expected: list[str]) -> None:
-    assert recognizer.find_terms(query) == expected
+    assert [term.termo for term in recognizer.find_terms(query)] == expected
