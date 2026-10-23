@@ -72,6 +72,16 @@ O script cria o usuário `judoka`, põe o código em `/opt/judoka-assistant`, ro
 `uv sync --frozen --no-dev`, reinicia o serviço e liga o Funnel. Logs:
 `journalctl -u judoka-api -f`.
 
+A URL da API é pública e cada pergunta gasta crédito do provedor; o CORS só barra
+navegadores. Por isso, em produção:
+
+- a API não serve a página de chat (`JUDO_CHAT_SERVE_CHAT_PAGE=false`);
+- `/api/perguntar` aceita 8 perguntas por minuto e 80 por dia de cada IP, e 1000 por dia no
+  total, em janelas móveis (`src/judo_chat/question_rate_limit.py`). Acima disso responde 429
+  (por IP) ou 503 (total), com `Retry-After`. As contagens zeram quando o serviço reinicia;
+  o teto de gasto fica nas contas dos provedores;
+- o uvicorn atende no máximo 8 conexões ao mesmo tempo.
+
 ### Teste local via ngrok
 
 Para testar a página contra uma API desta máquina, use o domínio fixo do ngrok da conta

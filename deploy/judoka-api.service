@@ -13,7 +13,9 @@ WorkingDirectory=/opt/judoka-assistant
 # As chaves dos provedores vêm do ambiente do processo (os SDKs leem OPENAI_API_KEY e
 # ANTHROPIC_API_KEY de os.environ), por isso o EnvironmentFile e não o .env do pydantic.
 EnvironmentFile=/etc/judoka-api/env
-ExecStart=/opt/judoka-assistant/.venv/bin/uvicorn judo_chat.main:app --host 127.0.0.1 --port 8010 --proxy-headers --forwarded-allow-ips 127.0.0.1
+# --limit-concurrency: a micro tem 1/8 de OCPU e cada pergunta segura a conexão por 5 a 8 s
+# esperando o provedor. Acima de 8 conexões o uvicorn responde 503 na hora.
+ExecStart=/opt/judoka-assistant/.venv/bin/uvicorn judo_chat.main:app --host 127.0.0.1 --port 8010 --proxy-headers --forwarded-allow-ips 127.0.0.1 --limit-concurrency 8
 Restart=on-failure
 RestartSec=5
 
