@@ -74,6 +74,7 @@ async def ask(
                 technique=g.technique,
                 anchor=g.anchor,
                 videos=[VideoLink(url=v.url, kodokan=v.kodokan) for v in g.videos],
+                kanji=g.kanji,
             )
             for g in groups
         ],

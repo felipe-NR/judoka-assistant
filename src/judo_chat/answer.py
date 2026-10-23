@@ -285,6 +285,8 @@ class VideoGroup:
     # Trecho da resposta onde a técnica é apresentada (título ou item); None vai para o fim.
     anchor: str | None
     videos: tuple[TechniqueVideo, ...]
+    # Da ficha da FGJ; a página mostra o kanji ao lado da resposta. None sem ficha.
+    kanji: str | None = None
 
 
 _HEADLINE = re.compile(r"^\s*(#{1,6}\s|[-*]\s|\d+[.)]\s|\*\*)")
@@ -330,7 +332,8 @@ def video_groups(
         if not technique.videos:
             continue
         videos = tuple(TechniqueVideo(v.url, v.source == "kodokan") for v in technique.videos)
-        groups.append(VideoGroup(technique_id, technique.name, anchored.get(technique_id), videos))
+        kanji = technique.fgj.kanji if technique.fgj else None
+        groups.append(VideoGroup(technique_id, technique.name, anchored.get(technique_id), videos, kanji))
     return groups
 
 

@@ -41,6 +41,8 @@ class VideoGroupOut(BaseModel):
     # Trecho da resposta (título ou item) onde a página põe os vídeos; null vai para o fim.
     anchor: str | None
     videos: list[VideoLink]
+    # Kanji da ficha da FGJ, para a página mostrar ao lado da resposta (2026-10-23).
+    kanji: str | None = None
 
 
 class AskResponse(BaseModel):
