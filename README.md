@@ -50,12 +50,32 @@ recusa caiu de 3,1% para 0%, com recusa correta de 100% e nenhum falso aceite ad
 A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 (`{"query": "como faço o ashi barai?"}`).
 
-## Publicar (GitHub Pages + API local via ngrok)
+## Publicar (GitHub Pages + API na OCI)
 
 A página de chat fica em https://felipe-nr.github.io/judoka-assistant/, publicada pelo
 workflow `.github/workflows/pages.yml` a cada push que mexe em `src/judo_chat/static/`.
-O GitHub Pages só serve arquivos estáticos, então a API roda nesta máquina e é exposta pelo
-domínio fixo do ngrok da conta (`https://quadrantal-glenda-interstream.ngrok-free.dev`):
+O GitHub Pages só serve arquivos estáticos; a URL da API vem da variável de repositório
+`JUDO_CHAT_API_URL`.
+
+Em produção a API roda numa VM E2.1.Micro Always Free da OCI, separada da VM do ai-memory,
+como serviço systemd (`deploy/judoka-api.service`) ouvindo só em `127.0.0.1:8010`. O acesso
+público entra pelo Tailscale Funnel, que dá HTTPS sem abrir porta na OCI. Para instalar ou
+atualizar, na VM:
+
+```bash
+sudo install -d -m 700 /etc/judoka-api
+sudo cp deploy/env.example /etc/judoka-api/env   # preencha OPENAI_API_KEY
+sudo ./deploy/install.sh                          # ou: sudo ./deploy/install.sh <branch ou commit>
+```
+
+O script cria o usuário `judoka`, põe o código em `/opt/judoka-assistant`, roda
+`uv sync --frozen --no-dev`, reinicia o serviço e liga o Funnel. Logs:
+`journalctl -u judoka-api -f`.
+
+### Teste local via ngrok
+
+Para testar a página contra uma API desta máquina, use o domínio fixo do ngrok da conta
+(`https://quadrantal-glenda-interstream.ngrok-free.dev`):
 
 ```bash
 ./start-ngrok.sh   # sobe a API na porta 8010 (JUDO_CHAT_PORT) e o túnel ngrok
