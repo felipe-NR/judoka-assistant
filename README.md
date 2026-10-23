@@ -93,12 +93,13 @@ Para configurar, uma vez:
 2. Na VM, a partir de um checkout do repositório:
    `sudo ./deploy/setup-ci.sh judoka-deploy-ci.pub`. Rodar de novo troca a chave.
 3. Na política da tailnet, declare o dono de `tag:ci` em `tagOwners` e libere a porta 22 da
-   VM para ele, por exemplo
-   `{"src": ["tag:ci"], "dst": ["tag:judoka-api"], "ip": ["tcp:22"]}` em `grants`. Depois
-   crie um cliente OAuth com escrita em `auth_keys` e a tag `tag:ci`.
-4. No GitHub, crie o environment `production` com os secrets `TS_OAUTH_CLIENT_ID`,
-   `TS_OAUTH_SECRET` e `JUDO_CHAT_DEPLOY_SSH_KEY` (a chave privada) e a variável
-   `JUDO_CHAT_DEPLOY_HOST` (o nome MagicDNS da VM). A variável `JUDO_CHAT_API_URL`, do
+   VM para ele. A VM não tem tag, então ela entra em `hosts` com o IP dela na tailnet (o IP
+   fica só na política, fora deste repositório) e a regra vai em `grants`:
+   `{"src": ["tag:ci"], "dst": ["judoka-api"], "ip": ["tcp:22"]}`. Depois crie um cliente
+   OAuth com escrita em `auth_keys` e a tag `tag:ci`.
+4. No GitHub, crie o environment `production`, restrito ao branch `main`, com os secrets
+   `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` e `JUDO_CHAT_DEPLOY_SSH_KEY` (a chave privada) e
+   a variável `JUDO_CHAT_DEPLOY_HOST` (o nome MagicDNS da VM). A variável `JUDO_CHAT_API_URL`, do
    repositório, já existe por causa do `pages.yml`.
 
 O `install.sh` manual continua valendo para a primeira instalação e para emergências.
