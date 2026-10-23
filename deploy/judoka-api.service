@@ -1,0 +1,45 @@
+# API do judoka-assistant em produção. Instalada por deploy/install.sh.
+# Escuta só em 127.0.0.1: o acesso público entra pelo Tailscale Funnel.
+[Unit]
+Description=judoka-assistant API (uvicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=judoka
+Group=judoka
+WorkingDirectory=/opt/judoka-assistant
+# As chaves dos provedores vêm do ambiente do processo (os SDKs leem OPENAI_API_KEY e
+# ANTHROPIC_API_KEY de os.environ), por isso o EnvironmentFile e não o .env do pydantic.
+EnvironmentFile=/etc/judoka-api/env
+ExecStart=/opt/judoka-assistant/.venv/bin/uvicorn judo_chat.main:app --host 127.0.0.1 --port 8010 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=on-failure
+RestartSec=5
+
+# A micro tem 1 GB; a API usa ~150 MB.
+MemoryMax=400M
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
