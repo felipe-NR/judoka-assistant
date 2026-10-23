@@ -14,10 +14,12 @@ from judo_chat.normalizer import Match, Recognizer
 class FakeGuardrail:
     def __init__(self, category: Category, failed: bool = False) -> None:
         self.result = GuardrailResult(category=category, reason="teste", failed=failed)
-        self.calls: list[tuple[str, list[str], list[str]]] = []
+        self.calls: list[tuple[str, list[str], list[str], list[str]]] = []
 
-    async def classify(self, query: str, history: list[str], techniques: list[str]) -> GuardrailResult:
-        self.calls.append((query, list(history), list(techniques)))
+    async def classify(
+        self, query: str, history: list[str], techniques: list[str], terms: list[str]
+    ) -> GuardrailResult:
+        self.calls.append((query, list(history), list(techniques), list(terms)))
         return self.result
 
 
@@ -61,6 +63,14 @@ def test_out_of_scope_gets_scope_refusal(client: TestClient, answerer: FakeAnswe
     body = client.post("/api/perguntar", json={"query": "qual a capital da França?"}).json()
     assert body["answer"] == REFUSAL_MESSAGE
     assert answerer.calls == []
+
+
+def test_rule_terms_reach_the_guardrail(client: TestClient) -> None:
+    guardrail = FakeGuardrail("regras")
+    app.dependency_overrides[get_guardrail] = lambda: guardrail
+    client.post("/api/perguntar", json={"query": "o que é sono-mama?"})
+    [(_, _, techniques, terms)] = guardrail.calls
+    assert techniques == [] and terms == ['Sono-mama (termo do judô em "Pontuação e duração da luta")']
 
 
 def test_ambiguous_name_reaches_answerer_with_candidates(client: TestClient, answerer: FakeAnswerer) -> None:
@@ -128,7 +138,7 @@ def test_follow_up_uses_history(client: TestClient, answerer: FakeAnswerer) -> N
     [(_, matches, sent_history)] = answerer.calls
     assert [m.technique_ids for m in matches] == [("uchi-mata",)]
     assert [t.role for t in sent_history] == ["usuario", "assistente"]
-    [(_, guardrail_history, techniques)] = guardrail.calls
+    [(_, guardrail_history, techniques, _)] = guardrail.calls
     assert techniques == ["Uchi-mata"] and len(guardrail_history) == 2
 
 

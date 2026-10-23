@@ -18,6 +18,7 @@ from judo_chat.providers import create_providers
 from judo_chat.routers.ask import router as ask_router
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 _STATIC = Path(__file__).parent / "static"
 
 
@@ -26,6 +27,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     corpus = load_corpus(settings.data_dir)
     recognizer = Recognizer(corpus)
+    # Um checkout desatualizado ignora variáveis do .env que ele não conhece (extra="ignore");
+    # este log mostra o que está valendo de fato.
+    guardrail_api = settings.guardrail_api if settings.provider == "openai" else "messages"
+    logger.info(
+        "configuração: provider=%s guardrail=%s/%s resposta=%s",
+        settings.provider,
+        guardrail_api,
+        settings.guardrail_model,
+        settings.answer_model,
+    )
     async with create_providers(settings, corpus, recognizer) as providers:
         app.state.corpus = corpus
         app.state.recognizer = recognizer

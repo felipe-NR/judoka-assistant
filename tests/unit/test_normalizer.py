@@ -96,3 +96,19 @@ def test_typo_variants_are_flagged(recognizer: Recognizer) -> None:
     [match] = recognizer.find("iPhone seoi")
     assert match.match_type == "variante"
     assert match.technique_ids == ("ippon-seoi-nage",)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected"),
+    [
+        ("O que significa matte?", ["Matte"]),
+        ("o que é sono mama", ["Sono-mama"]),
+        ("quantos shidos desclassificam?", ["Shido"]),
+        ("o que é waza-ari-awasete-ippon?", ["Waza-ari-awasete-ippon"]),
+        ("dois waza-aris valem ippon?", ["Waza-ari", "Ippon"]),
+        # A canonização das técnicas colapsa letras dobradas; a dos termos, não.
+        ("chimarrão de erva mate", []),
+    ],
+)
+def test_find_terms(recognizer: Recognizer, query: str, expected: list[str]) -> None:
+    assert [term.termo for term in recognizer.find_terms(query)] == expected

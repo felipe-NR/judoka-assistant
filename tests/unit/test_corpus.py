@@ -80,6 +80,18 @@ def test_loader_rejects_unknown_technique_id(tmp_path: Path) -> None:
         load_corpus(data)
 
 
+def test_loader_rejects_rule_term_missing_from_its_document(tmp_path: Path) -> None:
+    data = _copy_data(tmp_path)
+    terms = data / "glossario" / "termos_regras.yaml"
+    terms.write_text(terms.read_text("utf-8") + "- termo: Koka\n  documento: regras/pontuacao\n", "utf-8")
+    with pytest.raises(CorpusError, match="Koka"):
+        load_corpus(data)
+
+
+def test_rule_terms_are_loaded(corpus: Corpus) -> None:
+    assert "Sono-mama" in {term.termo for term in corpus.rule_terms}
+
+
 def test_fgj_covers_the_100_official_techniques(corpus: Corpus) -> None:
     with_fgj = [t for t in corpus.techniques if t.fgj is not None]
     assert len(with_fgj) == 100

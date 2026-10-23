@@ -20,10 +20,12 @@ class Settings(BaseSettings):
     guardrail_effort: Literal["low", "medium", "high"] = "low"
     guardrail_max_tokens: int = 1024
     # Só na OpenAI: "decisions" classifica pela Decisions API (paga só a entrada, devolve
-    # probabilidades). Bloqueia se P(fora) ou P(pedido de agressão) passar do limite.
+    # probabilidades). Bloqueia se P(fora), P(pedido de agressão) ou P(pedido para mudar as
+    # instruções) passar do limite.
     guardrail_api: Literal["responses", "decisions"] = "responses"
     guardrail_fora_threshold: float = 0.5
     guardrail_harm_threshold: float = 0.5
+    guardrail_instructions_threshold: float = 0.5
     # Haiku 5.5: o modelo mais barato disponível (US$ 0,10/M de entrada e US$ 0,50/M de saída
     # com prompt de até 100 mil tokens). Para mais qualidade, use claude-sonnet-5-5 com
     # JUDO_CHAT_ANSWER_EFFORT=low e JUDO_CHAT_USE_REFUSAL_FALLBACKS=true.
@@ -38,6 +40,10 @@ class Settings(BaseSettings):
     # 1h combinado com o re-aquecimento: grava 1 vez por dia (2x o preço de entrada) e lê a
     # cada ~55 min parado (0,1x). Com 5 min seriam ~13 re-aquecimentos por hora.
     cache_ttl: Literal["5m", "1h"] = "1h"
+    # Só na OpenAI (gpt-5.6 em diante): tempo mínimo do prefixo no cache. O padrão da API é
+    # 30m, e cada expiração regrava o corpus (1,25x o preço de entrada). 12h grava a 2,5x,
+    # uma vez para o dia inteiro. O SDK 3.37 ainda tipa só "30m"; a documentação aceita "12h".
+    openai_cache_ttl: Literal["30m", "12h"] = "12h"
     keepalive_enabled: bool = True
     # Abaixo dos 60 min do TTL, com folga para a checagem que roda a cada minuto.
     keepalive_interval_s: float = 55 * 60

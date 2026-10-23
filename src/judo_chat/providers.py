@@ -19,7 +19,7 @@ from judo_chat.relations import Relations
 
 class GuardrailProvider(Protocol):
     async def classify(
-        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = ()
+        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
     ) -> GuardrailResult: ...
 
 
@@ -62,6 +62,7 @@ async def create_providers(settings: Settings, corpus: Corpus, recognizer: Recog
                 settings.guardrail_timeout_s,
                 fora_threshold=settings.guardrail_fora_threshold,
                 harm_threshold=settings.guardrail_harm_threshold,
+                instructions_threshold=settings.guardrail_instructions_threshold,
             )
         else:
             guardrail = OpenAIGuardrail(
