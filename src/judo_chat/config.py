@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # 1h combinado com o re-aquecimento: grava 1 vez por dia (2x o preço de entrada) e lê a
     # cada ~55 min parado (0,1x). Com 5 min seriam ~13 re-aquecimentos por hora.
     cache_ttl: Literal["5m", "1h"] = "1h"
+    # Só na OpenAI (gpt-5.6 em diante): tempo mínimo do prefixo no cache. O padrão da API é
+    # 30m, e cada expiração regrava o corpus (1,25x o preço de entrada). 12h grava a 2,5x,
+    # uma vez para o dia inteiro. O SDK 3.37 ainda tipa só "30m"; a documentação aceita "12h".
+    openai_cache_ttl: Literal["30m", "12h"] = "12h"
     keepalive_enabled: bool = True
     # Abaixo dos 60 min do TTL, com folga para a checagem que roda a cada minuto.
     keepalive_interval_s: float = 55 * 60

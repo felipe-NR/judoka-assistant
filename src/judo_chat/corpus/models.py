@@ -124,10 +124,19 @@ class Document(_Frozen):
     _provenance = field_validator("provenance")(_check_provenance)
 
 
+class RuleTerm(_Frozen):
+    """Termo de regras, arbitragem ou graduação que não é nome de técnica."""
+
+    termo: str
+    documento: str
+
+
 class Corpus(_Frozen):
     techniques: tuple[Technique, ...]
     popular_names: tuple[PopularName, ...]
     documents: tuple[Document, ...]
+    # data/glossario/termos_regras.yaml, para o reconhecedor avisar o guardrail.
+    rule_terms: tuple[RuleTerm, ...] = ()
     # data/glossario/variantes_digitacao.yaml: palavra digitada -> palavra entendida.
     typo_variants: tuple[tuple[str, str], ...] = ()
 

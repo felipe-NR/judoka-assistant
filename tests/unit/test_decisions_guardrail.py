@@ -84,6 +84,16 @@ async def test_allows_in_scope_category() -> None:
     assert [q["name"] for q in call["questions"]] == ["categoria", "agressao"]  # type: ignore[index, union-attr]
 
 
+async def test_sends_recognized_rule_terms() -> None:
+    probabilities = {"tecnica": 0.0, "historia": 0.0, "regras": 0.9, "fora": 0.1}
+    guardrail, client = _guardrail(_decision(_category("regras", probabilities), _harm(0.0)))
+    await guardrail.classify("o que é sono-mama?", terms=["Sono-mama"])
+    [call] = client.decisions.calls
+    assert call["input"] == (
+        "<pergunta>\no que é sono-mama?\n</pergunta>\n<termos_reconhecidos>Sono-mama</termos_reconhecidos>"
+    )
+
+
 async def test_blocks_when_fora_probability_passes_threshold() -> None:
     probabilities = {"tecnica": 0.6, "historia": 0.0, "regras": 0.05, "fora": 0.35}
     guardrail, _ = _guardrail(_decision(_category("tecnica", probabilities), _harm(0.1)))

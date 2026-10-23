@@ -1,4 +1,4 @@
-"""Reconhecimento de nomes de técnicas em texto livre.
+"""Reconhecimento de nomes de técnicas e de termos de regras em texto livre.
 
 Substitui a regex do judo-techniques-bot, que casava substrings ("Ko-uchi-gari"
 disparava O-uchi-gari) e não aceitava macron nem grafia separada por sílaba.
@@ -40,6 +40,11 @@ def _fold(text: str) -> str:
 
 def tokenize(text: str) -> list[str]:
     return _TOKEN.findall(_fold(text))
+
+
+def literal(text: str) -> str:
+    """Forma sem acento, espaço nem hífen, mas com a grafia mantida: "matte" não vira "mate"."""
+    return "".join(tokenize(text))
 
 
 def canonical(text: str) -> str:
@@ -88,6 +93,9 @@ class Recognizer:
                 self._add(technique.name_pt_br, Entry(ids, "pt_br", technique.name))
         for popular in corpus.popular_names:
             self._add(popular.name, Entry(popular.technique_ids, "popular", popular.name))
+        # Termos de regras casam pela grafia, sem a canonização das técnicas: com ela, "mate"
+        # (a erva) seria o comando "matte".
+        self._terms = {literal(term.termo): term.termo for term in corpus.rule_terms}
 
     def _add(self, name: str, entry: Entry) -> None:
         key = canonical(name)
@@ -147,3 +155,22 @@ class Recognizer:
             matches.append(Match(term, entry.technique_ids, match_type, entry.label))
             position += size
         return matches
+
+    def find_terms(self, text: str) -> list[str]:
+        """Termos de regras, arbitragem e graduação no texto, do mais longo para o mais curto."""
+        tokens = tokenize(text)
+        found: list[str] = []
+        position = 0
+        while position < len(tokens):
+            for size in range(min(_MAX_WINDOW, len(tokens) - position), 0, -1):
+                key = "".join(tokens[position : position + size])
+                # Plural em português: "shidos", "ippons".
+                term = self._terms.get(key) or (self._terms.get(key[:-1]) if key.endswith("s") else None)
+                if term is not None:
+                    if term not in found:
+                        found.append(term)
+                    position += size
+                    break
+            else:
+                position += 1
+        return found

@@ -3,8 +3,17 @@ from pathlib import Path
 
 import yaml
 
-from judo_chat.corpus.models import Corpus, Document, FgjTechnique, FgjTerm, PopularName, Technique, Theme
-from judo_chat.normalizer import canonical
+from judo_chat.corpus.models import (
+    Corpus,
+    Document,
+    FgjTechnique,
+    FgjTerm,
+    PopularName,
+    RuleTerm,
+    Technique,
+    Theme,
+)
+from judo_chat.normalizer import canonical, literal
 
 # Entradas do corpus cujo verbete na FGJ tem outro nome.
 _TERM_ALIASES = {"osaekomi-waza": "OSAE-WAZA"}
@@ -102,6 +111,22 @@ def _fgj_documents(fgj_dir: Path) -> list[Document]:
     return documents
 
 
+def _read_rule_terms(path: Path, documents: list[Document]) -> list[RuleTerm]:
+    if not path.exists():
+        return []
+    bodies = {document.id: literal(document.body) for document in documents}
+    terms = [RuleTerm.model_validate(item) for item in _read_yaml_list(path)]
+    for term in terms:
+        if term.documento not in bodies:
+            raise CorpusError(f"{path}: documento inexistente {term.documento!r} para {term.termo!r}")
+        if literal(term.termo) not in bodies[term.documento]:
+            raise CorpusError(f"{path}: {term.termo!r} não aparece em {term.documento}")
+    duplicated = [key for key, count in Counter(literal(t.termo) for t in terms).items() if count > 1]
+    if duplicated:
+        raise CorpusError(f"{path}: termos repetidos: {duplicated}")
+    return terms
+
+
 def load_corpus(data_dir: Path) -> Corpus:
     techniques = [Technique.model_validate(item) for item in _read_yaml_list(data_dir / "glossario" / "tecnicas.yaml")]
     popular = [
@@ -134,6 +159,8 @@ def load_corpus(data_dir: Path) -> Corpus:
     ]
     documents += _fgj_documents(data_dir / "fgj")
 
+    rule_terms = _read_rule_terms(data_dir / "glossario" / "termos_regras.yaml", documents)
+
     variants_path = data_dir / "glossario" / "variantes_digitacao.yaml"
     variants = yaml.safe_load(variants_path.read_text("utf-8")) if variants_path.exists() else {}
     if not isinstance(variants, dict):
@@ -157,5 +184,6 @@ def load_corpus(data_dir: Path) -> Corpus:
         ),
         popular_names=tuple(sorted(popular, key=lambda p: p.name.lower())),
         documents=tuple(documents),
+        rule_terms=tuple(sorted(rule_terms, key=lambda t: literal(t.termo))),
         typo_variants=tuple(sorted((str(k).lower(), str(v).lower()) for k, v in variants.items())),
     )

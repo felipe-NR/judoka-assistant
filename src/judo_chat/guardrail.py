@@ -41,6 +41,10 @@ Pode vir também:
   continuação, na pergunta anterior) por um reconhecedor automático, mesmo com erro de
   digitação. Eles indicam que a pergunta é de judô. A exceção é o pedido de como executar
   a técnica dentro de outra arte marcial (por exemplo, numa luta de MMA): esse continua fora.
+- <termos_reconhecidos>: termos de regras, arbitragem ou graduação do judô achados na
+  pergunta (pontuações, comandos do árbitro, punições, posturas e saudações dos exames). A
+  base do assistente explica esses termos: uma pergunta sobre o significado, o uso ou a
+  história de um deles é de regras.
 
 Perguntar qual é, no judô, a técnica equivalente a um nome de outra arte marcial (jiu-jitsu,
 BJJ, wrestling) é pergunta de técnica de judô.
@@ -78,6 +82,21 @@ class GuardrailResult(BaseModel):
         return self.category != "fora"
 
 
+def guardrail_content(
+    query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
+) -> str:
+    """Mensagem do usuário: a pergunta delimitada, com o histórico antes e as pistas do
+    reconhecedor depois."""
+    content = f"<pergunta>\n{query}\n</pergunta>"
+    if history:
+        content = "<historico>\n" + "\n".join(history) + "\n</historico>\n" + content
+    if techniques:
+        content += "\n<tecnicas_reconhecidas>" + ", ".join(techniques) + "</tecnicas_reconhecidas>"
+    if terms:
+        content += "\n<termos_reconhecidos>" + ", ".join(terms) + "</termos_reconhecidos>"
+    return content
+
+
 def _closed(kind: str) -> GuardrailResult:
     return GuardrailResult(category="fora", reason=f"guardrail_error:{kind}", failed=True)
 
@@ -93,13 +112,9 @@ class Guardrail:
         self._max_tokens = max_tokens
 
     async def classify(
-        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = ()
+        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
     ) -> GuardrailResult:
-        content = f"<pergunta>\n{query}\n</pergunta>"
-        if history:
-            content = "<historico>\n" + "\n".join(history) + "\n</historico>\n" + content
-        if techniques:
-            content += "\n<tecnicas_reconhecidas>" + ", ".join(techniques) + "</tecnicas_reconhecidas>"
+        content = guardrail_content(query, history, techniques, terms)
         try:
             response = await self._client.with_options(timeout=self._timeout_s, max_retries=1).messages.parse(
                 model=self._model,

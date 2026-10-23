@@ -10,10 +10,10 @@ import openai
 import pydantic
 from openai import AsyncOpenAI
 
-from judo_chat.answer import UNAVAILABLE_MESSAGE, Answer, Turn, build_system_text, build_user_message
+from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Answer, Turn, build_system_text, build_user_message
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
-from judo_chat.guardrail import GUARDRAIL_SYSTEM, GuardrailOutput, GuardrailResult, _closed
+from judo_chat.guardrail import GUARDRAIL_SYSTEM, GuardrailOutput, GuardrailResult, _closed, guardrail_content
 from judo_chat.normalizer import Match
 from judo_chat.relations import Relations
 
@@ -66,15 +66,6 @@ específica). Perguntas sobre como uma técnica funciona, sobre segurança no tr
 técnicas proibidas nas regras não tornam a afirmação verdadeira."""
 
 
-def _guardrail_content(query: str, history: Sequence[str], techniques: Sequence[str]) -> str:
-    content = f"<pergunta>\n{query}\n</pergunta>"
-    if history:
-        content = "<historico>\n" + "\n".join(history) + "\n</historico>\n" + content
-    if techniques:
-        content += "\n<tecnicas_reconhecidas>" + ", ".join(techniques) + "</tecnicas_reconhecidas>"
-    return content
-
-
 class OpenAIGuardrail:
     def __init__(self, client: AsyncOpenAI, model: str, timeout_s: float, *, effort: str, max_tokens: int) -> None:
         self._client = client
@@ -84,9 +75,9 @@ class OpenAIGuardrail:
         self._max_tokens = max_tokens
 
     async def classify(
-        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = ()
+        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
     ) -> GuardrailResult:
-        content = _guardrail_content(query, history, techniques)
+        content = guardrail_content(query, history, techniques, terms)
         try:
             response = await self._client.with_options(timeout=self._timeout_s, max_retries=1).responses.create(
                 model=self._model,
@@ -137,9 +128,9 @@ class OpenAIDecisionsGuardrail:
         self._harm_threshold = harm_threshold
 
     async def classify(
-        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = ()
+        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
     ) -> GuardrailResult:
-        content = _guardrail_content(query, history, techniques)
+        content = guardrail_content(query, history, techniques, terms)
         try:
             decision = await self._client.with_options(timeout=self._timeout_s, max_retries=1).decisions.create(
                 model=self._model,
@@ -207,6 +198,7 @@ class OpenAIAnswerer:
             "input": content,
             "max_output_tokens": max_output_tokens,
             "prompt_cache_key": self._prompt_cache_key,
+            "prompt_cache_options": {"ttl": self._settings.openai_cache_ttl},
             "store": False,
         }
         if self._settings.answer_effort is not None:
@@ -236,8 +228,9 @@ class OpenAIAnswerer:
         text = response.output_text.strip()
         if response.status != "completed" or not text:
             return Answer(UNAVAILABLE_MESSAGE, True, cache_read, cache_write)
-        return Answer(text, False, cache_read, cache_write)
+        return Answer(text, text == REFUSAL_MESSAGE, cache_read, cache_write)
 
     async def keep_alive(self) -> tuple[int, int]:
-        """A OpenAI faz cache de prefixos automaticamente; não há TTL para renovar."""
+        """Sem re-aquecimento na OpenAI: o TTL de 12 horas (`openai_cache_ttl`) cobre o dia
+        com uma gravação, em vez de leituras periódicas."""
         return (0, 0)

@@ -19,7 +19,7 @@ from judo_chat.relations import Relations
 
 class GuardrailProvider(Protocol):
     async def classify(
-        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = ()
+        self, query: str, history: Sequence[str] = (), techniques: Sequence[str] = (), terms: Sequence[str] = ()
     ) -> GuardrailResult: ...
 
 
