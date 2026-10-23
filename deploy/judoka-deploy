@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Comando único que a chave de deploy do GitHub Actions pode rodar na VM (como root, via
+# sudo). Instalado em /usr/local/sbin por deploy/setup-ci.sh.
+# Uso: judoka-deploy <sha do commit, 40 caracteres>
+#
+# O install.sh roda como root, então ele não sai de /opt/judoka-assistant, que é do usuário
+# do serviço: vem de um clone do root, no commit pedido, e só se o commit estiver no main.
+set -euo pipefail
+
+SHA="${1:-}"
+REPO_URL="https://github.com/felipe-NR/judoka-assistant.git"
+CACHE="/var/lib/judoka-deploy/repo.git"
+
+if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Uso: judoka-deploy <sha de 40 caracteres>" >&2
+  exit 2
+fi
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Rode como root (sudo $0)." >&2
+  exit 1
+fi
+
+# Um deploy por vez.
+exec 9>/run/judoka-deploy.lock
+flock 9
+
+if [ ! -d "$CACHE" ]; then
+  install -d -m 700 "$(dirname "$CACHE")"
+  git init -q --bare "$CACHE"
+fi
+git -C "$CACHE" fetch -q --prune "$REPO_URL" "+refs/heads/main:refs/heads/main"
+if ! git -C "$CACHE" merge-base --is-ancestor "$SHA" main 2>/dev/null; then
+  echo "O commit $SHA não está no main." >&2
+  exit 1
+fi
+
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+git -C "$CACHE" archive "$SHA" deploy | tar -x -C "$WORK"
+"$WORK/deploy/install.sh" "$SHA"

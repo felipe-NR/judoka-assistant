@@ -1,0 +1,74 @@
+# Testa e instala a API na VM de produção a cada push no main que mexe no backend.
+# O runner entra na tailnet como nó efêmero (tag:ci) e faz SSH na VM com uma chave que só
+# roda /usr/local/sbin/judoka-deploy <commit> (ver deploy/setup-ci.sh). Configuração no
+# README, seção "Deploy automático".
+name: Deploy da API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "!src/judo_chat/static/**"
+      - "data/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "deploy/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Um deploy por vez, sem cancelar o que já está instalando.
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      # tests/eval chama o provedor de verdade e fica de fora.
+      - run: uv run pytest -q tests/api tests/unit
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Instalar o commit na VM
+        env:
+          DEPLOY_HOST: ${{ vars.JUDO_CHAT_DEPLOY_HOST }}
+          DEPLOY_KEY: ${{ secrets.JUDO_CHAT_DEPLOY_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          # A conexão passa pelo WireGuard do Tailscale, que já autentica o nó de destino;
+          # por isso a chave do host pode vir do keyscan.
+          ssh-keyscan -T 15 "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy -o BatchMode=yes "judoka-deploy@$DEPLOY_HOST" "$GITHUB_SHA"
+
+      # Preflight de CORS: passa pelo Funnel e pela aplicação sem chamar o provedor nem
+      # contar no rate limit.
+      - name: Conferir a URL pública
+        env:
+          API_URL: ${{ vars.JUDO_CHAT_API_URL }}
+        run: |
+          curl -fsS -o /dev/null --retry 5 --retry-delay 3 --retry-all-errors -X OPTIONS \
+            -H "Origin: https://felipe-nr.github.io" \
+            -H "Access-Control-Request-Method: POST" \
+            "$API_URL/api/perguntar"

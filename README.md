@@ -72,6 +72,38 @@ O script cria o usuário `judoka`, põe o código em `/opt/judoka-assistant`, ro
 `uv sync --frozen --no-dev`, reinicia o serviço e liga o Funnel. Logs:
 `journalctl -u judoka-api -f`.
 
+### Deploy automático
+
+O workflow `.github/workflows/deploy.yml` roda a cada push no `main` que mexe no backend
+(`src/` fora de `static/`, `data/`, `pyproject.toml`, `uv.lock`, `deploy/`), e também pela
+aba Actions (`workflow_dispatch`). Ele roda o `ruff` e os testes de `tests/api` e
+`tests/unit` e, se passarem, instala o commit na VM. Por último, confere a URL pública com um
+preflight de CORS, que não chama o provedor nem conta no rate limit. Mudanças só na página
+continuam saindo pelo `pages.yml`.
+
+O runner entra na tailnet como nó efêmero com a tag `tag:ci` e faz SSH na VM como
+`judoka-deploy`. A chave desse usuário só roda `/usr/local/sbin/judoka-deploy <commit>`, que
+recusa commits fora do `main`. Esse comando roda o `install.sh` a partir de um clone do root,
+e não de `/opt/judoka-assistant`, que pertence ao usuário do serviço.
+
+Para configurar, uma vez:
+
+1. Gere a chave do deploy fora do repositório:
+   `ssh-keygen -t ed25519 -N "" -C github-actions-deploy -f judoka-deploy-ci`.
+2. Na VM, a partir de um checkout do repositório:
+   `sudo ./deploy/setup-ci.sh judoka-deploy-ci.pub`. Rodar de novo troca a chave.
+3. Na política da tailnet, declare o dono de `tag:ci` em `tagOwners` e libere a porta 22 da
+   VM para ele. A VM não tem tag, então ela entra em `hosts` com o IP dela na tailnet (o IP
+   fica só na política, fora deste repositório) e a regra vai em `grants`:
+   `{"src": ["tag:ci"], "dst": ["judoka-api"], "ip": ["tcp:22"]}`. Depois crie um cliente
+   OAuth com escrita em `auth_keys` e a tag `tag:ci`.
+4. No GitHub, crie o environment `production`, restrito ao branch `main`, com os secrets
+   `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` e `JUDO_CHAT_DEPLOY_SSH_KEY` (a chave privada) e
+   a variável `JUDO_CHAT_DEPLOY_HOST` (o nome MagicDNS da VM). A variável `JUDO_CHAT_API_URL`, do
+   repositório, já existe por causa do `pages.yml`.
+
+O `install.sh` manual continua valendo para a primeira instalação e para emergências.
+
 A URL da API é pública e cada pergunta gasta crédito do provedor; o CORS só barra
 navegadores. Por isso, em produção:
 
