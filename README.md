@@ -69,7 +69,8 @@ sudo ./deploy/install.sh                          # ou: sudo ./deploy/install.sh
 ```
 
 O script cria o usuário `judoka`, põe o código em `/opt/judoka-assistant`, roda
-`uv sync --frozen --no-dev`, reinicia o serviço e liga o Funnel. Logs:
+`uv sync --frozen --no-dev`, baixa a base de países do bloqueio por país, reinicia o serviço
+e liga o Funnel. Logs:
 `journalctl -u judoka-api -f`.
 
 ### Deploy automático
@@ -113,23 +114,29 @@ navegadores. Por isso, em produção:
   total, em janelas móveis (`src/judo_chat/question_rate_limit.py`). Acima disso responde 429
   (por IP) ou 503 (total), com `Retry-After`. As contagens zeram quando o serviço reinicia;
   o teto de gasto fica nas contas dos provedores;
+- pedidos de Singapura, Paquistão, China e Índia recebem 403 (seção abaixo);
 - o uvicorn atende no máximo 8 conexões ao mesmo tempo.
 
-### Teste local via ngrok
+### Bloqueio por país
 
-Para testar a página contra uma API desta máquina, use o domínio fixo do ngrok da conta
-(`https://quadrantal-glenda-interstream.ngrok-free.dev`):
+A API responde 403 a qualquer rota quando o IP de origem é de Singapura, Paquistão, China
+ou Índia (`JUDO_CHAT_BLOCKED_COUNTRIES`, em JSON: `'["SG","PK","CN","IN"]'`; `'[]'`
+desliga). Quase todo acesso desses países a sites pequenos é bot de datacenter, e cada
+pergunta respondida gasta tokens. Como no rate limit, o IP vem do `X-Forwarded-For` que o
+Funnel envia, aceito pelo uvicorn porque o Funnel conecta de 127.0.0.1
+(`--forwarded-allow-ips`).
+
+A base de países fica em `.geoip/` (fora do git). O `install.sh` a baixa a cada deploy; se o
+download falhar, a base anterior continua valendo. A DB-IP publica uma base nova por mês.
+Para baixar à mão (na VM, como o usuário `judoka`, ou localmente):
 
 ```bash
-./start-ngrok.sh   # sobe a API na porta 8010 (JUDO_CHAT_PORT) e o túnel ngrok
-./stop-ngrok.sh    # derruba os dois
+uv run python scripts/update_geoip.py
 ```
 
-A chave do provedor fica só no `.env` local; a página nunca a vê. Com a API desligada, a
-página carrega mas avisa que não conseguiu falar com o servidor. A conta ngrok gratuita tem
-um túnel por vez: o script se recusa a subir se o túnel de outro projeto (por exemplo o
-`delivery-platform`) estiver no ar. Para usar outra URL de API, crie a variável de
-repositório `JUDO_CHAT_API_URL` e rode o workflow de novo.
+Sem a base, a API sobe com o bloqueio desligado e avisa no log. A base é a
+[IP to Country Lite da DB-IP](https://db-ip.com) (CC BY 4.0), que não exige conta; uma
+`GeoLite2-Country.mmdb` da MaxMind também serve, apontada por `JUDO_CHAT_GEOIP_DB`.
 
 ## Como funciona
 

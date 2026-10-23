@@ -16,7 +16,8 @@ limit (`src/judo_chat/question_rate_limit.py`) e tem timeout. Configuração nov
 O deploy da API é automático: cada push no `main` que mexe no backend passa pelos testes e
 é instalado na VM pelo `.github/workflows/deploy.yml`, que chama
 `/usr/local/sbin/judoka-deploy <commit>` (`deploy/judoka-deploy`) por SSH dentro da tailnet.
-Merge no `main` é deploy em produção. A página sai pelo `pages.yml`. A configuração da VM, da
+Merge no `main` é deploy em produção. O `deploy/install.sh` também baixa a base de países
+do bloqueio por país (`scripts/update_geoip.py`). A página sai pelo `pages.yml`. A configuração da VM, da
 tailnet e dos secrets está no README, seção "Deploy automático".
 
 Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos

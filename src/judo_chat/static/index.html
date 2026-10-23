@@ -276,8 +276,7 @@
     try {
       const response = await fetch(API_URL + "/api/perguntar", {
         method: "POST",
-        // Sem este header o ngrok gratuito devolve uma página de aviso em vez da API.
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, history }),
       });
       const data = await response.json();

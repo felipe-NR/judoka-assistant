@@ -45,17 +45,6 @@ somam alguns segundos, então uma folha "respondendo…" no lugar da resposta aj
 O campo tem uma linha e não pode ser redimensionado. Perguntas longas rolam dentro dele.
 Ele deveria crescer com o texto até o limite de altura (`max-height`).
 
-## Limpeza depois da migração do ngrok para o Tailscale Funnel
-
-- O fallback de `JUDO_CHAT_API_URL` em `.github/workflows/pages.yml` ainda aponta para o
-  domínio do ngrok, e o comentário no topo do workflow diz que a API roda localmente pelo
-  ngrok.
-- O header `ngrok-skip-browser-warning` continua no `fetch` da página
-  (`src/judo_chat/static/index.html`), no CORS (`src/judo_chat/main.py`) e no teste de CORS
-  (`tests/api/test_ask.py`).
-- `start-ngrok.sh`, `stop-ngrok.sh` e a seção "Teste local via ngrok" do README: decidir se
-  ficam como ferramenta de teste local ou saem do repositório.
-
 ## GitHub Actions
 
 Avisos que aparecem nas annotations dos runs do `deploy.yml` (run 40030107154) e do

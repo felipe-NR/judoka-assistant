@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from judo_chat.config import get_settings
 from judo_chat.corpus.loader import load_corpus
 from judo_chat.errors import register_error_handlers
+from judo_chat.geoblock import GeoBlockMiddleware, open_country_database
 from judo_chat.keepalive import CacheKeepAlive
 from judo_chat.normalizer import Recognizer
 from judo_chat.providers import create_providers
@@ -69,11 +70,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="Judô Chat", lifespan=lifespan)
+# Antes do CORS, que fica por fora: o 403 sai com os cabeçalhos CORS e a página mostra o motivo.
+if get_settings().blocked_countries:
+    country_db = open_country_database(get_settings().geoip_db)
+    if country_db is not None:
+        app.add_middleware(GeoBlockMiddleware, lookup=country_db, blocked=get_settings().blocked_countries)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(get_settings().cors_origins),
     allow_methods=["POST"],
-    allow_headers=["Content-Type", "ngrok-skip-browser-warning"],
+    allow_headers=["Content-Type"],
 )
 register_error_handlers(app)
 app.include_router(ask_router)

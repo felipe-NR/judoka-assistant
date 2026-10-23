@@ -66,6 +66,11 @@ class Settings(BaseSettings):
     question_limit_global_per_day: int = 1000
     # Cada IP guarda no máximo question_limit_per_ip_per_day instantes; a micro tem 1 GB.
     question_limit_max_tracked_ips: int = 5000
+    # Países (ISO 3166-1) que recebem 403 em qualquer rota: quase todo acesso de lá é bot de
+    # datacenter (PR #15, 2026-10-23). Vazio desliga o bloqueio. A base sai de
+    # scripts/update_geoip.py.
+    blocked_countries: tuple[str, ...] = ("SG", "PK", "CN", "IN")
+    geoip_db: Path = _ROOT / ".geoip" / "dbip-country-lite.mmdb"
 
     @model_validator(mode="after")
     def _fallbacks_need_a_supported_model(self) -> Self:
