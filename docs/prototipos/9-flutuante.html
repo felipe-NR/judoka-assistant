@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2b63">
+<title>Judô Chat (Flutuante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mat: #2d6e4a; --seam: #245c3d; --blue: #1e2b63; --stitch: #a3aedb; --white: #ffffff;
+    --ink: #16231c; --muted: #4f5a66; --line: #e3e6ee; --hinomaru: #d23b33;
+    /* judogi branco: trama a 45 graus; judogi azul: trama na diagonal oposta */
+    --gi-white: repeating-linear-gradient(45deg, rgba(30,43,99,.055) 0 1px, transparent 1px 4px) var(--white);
+    --gi-blue: repeating-linear-gradient(-45deg, rgba(255,255,255,.07) 0 1px, transparent 1px 4px) var(--blue);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); font: 400 17px/1.55 "Atkinson Hyperlegible", system-ui, sans-serif;
+         background-color: var(--mat);
+         /* placas de 1 x 2 m */
+         background-image: linear-gradient(var(--seam) 2px, transparent 2px), linear-gradient(90deg, var(--seam) 2px, transparent 2px);
+         background-size: 96px 192px; background-attachment: fixed; }
+  .app { max-width: 560px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  .top { position: sticky; top: 0; z-index: 2; }
+  header { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 16px 12px;
+           background: var(--gi-blue); color: #eef1f8; }
+  h1 { margin: 0; font: 800 1.35rem "Shippori Mincho B1", serif; }
+  header span { font: 600 1rem "Shippori Mincho B1", serif; color: var(--stitch); }
+
+  .topics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .topics button { min-height: 60px; padding: 6px 0 8px; border: 0; border-radius: 8px; background: transparent;
+       color: var(--muted); font: 700 .9rem "Atkinson Hyperlegible", sans-serif; cursor: pointer;
+       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .topics i { font: 800 1.45rem/1 "Shippori Mincho B1", serif; font-style: normal; }
+
+  #log { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 20px 12px; }
+  .q { align-self: flex-end; max-width: 85%; padding: 10px 16px; border-radius: 18px 18px 4px 18px;
+       background: var(--gi-white); color: var(--blue); font-weight: 700; }
+  .a { background: var(--gi-white); border-radius: 8px; padding: 16px; box-shadow: 0 2px 0 var(--seam); }
+  .a .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .a h3 { margin: 0; font: 800 1.65rem/1.1 "Shippori Mincho B1", serif; color: var(--blue); }
+  .a .kanji { font: 800 1.6rem/1 "Shippori Mincho B1", serif; color: var(--blue); letter-spacing: .04em; }
+  .a .group { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+  .a .lead { margin: 12px 0 4px; }
+  .steps { list-style: none; margin: 0 0 14px; padding: 0; counter-reset: s; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 32px 1fr; gap: 10px; padding: 10px 0; }
+  .steps li + li { border-top: 1px solid var(--line); }
+  .steps li::before { content: counter(s); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+       border: 2px solid var(--blue); background: var(--white); color: var(--blue); font: 800 1rem "Shippori Mincho B1", serif; }
+  .steps b { display: block; font: 800 1.05rem "Shippori Mincho B1", serif; }
+  .video { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px;
+       border-radius: 8px; background: var(--gi-blue); color: var(--white); text-decoration: none; font-weight: 700; }
+  .matte { display: flex; gap: 14px; align-items: center; background: var(--gi-white); border-radius: 8px; padding: 14px 16px; }
+  .matte .mark { flex: 0 0 36px; height: 36px; border-radius: 50%; background: var(--hinomaru); }
+  .matte strong { display: block; font: 800 1.25rem "Shippori Mincho B1", serif; color: var(--blue); }
+  .matte p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+  .dock { position: sticky; bottom: 0; padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); }
+  form { display: flex; gap: 8px; align-items: flex-end; }
+  textarea { flex: 1; min-height: 52px; max-height: 140px; resize: none; padding: 14px 16px; border: 1px solid var(--line);
+       border-radius: 26px; background: var(--white); color: var(--ink); font: inherit; font-size: 1rem; }
+  textarea::placeholder { color: #6b7590; }
+  form button { flex: 0 0 auto; min-height: 52px; padding: 0 18px; border: 2px solid var(--blue); border-radius: 26px;
+       background: var(--white); color: var(--blue); font: 800 1.05rem "Shippori Mincho B1", serif; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--hinomaru); outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  .dock { background: linear-gradient(to bottom, rgba(45,110,74,0), var(--mat) 18px); }
+  .dock .topics { margin: 0 auto 8px; padding: 4px; border-radius: 14px; background: var(--gi-white);
+       box-shadow: 0 2px 0 var(--seam); }
+  .topics button[aria-pressed="true"] { background: var(--gi-blue); color: var(--white); }
+  textarea { border: 0; box-shadow: 0 2px 0 var(--seam); background: var(--gi-white); }
+  form button { flex: 0 0 52px; padding: 0; border-radius: 50%; display: grid; place-items: center;
+       box-shadow: 0 2px 0 var(--seam); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <header>
+      <h1>Judô Chat</h1>
+      <span lang="ja">柔道</span>
+    </header>
+    
+  </div>
+
+  <section id="log" aria-live="polite">
+    <div class="q">Como faço o seoi-nage?</div>
+    <article class="a">
+      <div class="head">
+        <h3>Seoi-nage</h3>
+        <span class="kanji" lang="ja" aria-hidden="true">背負投</span>
+      </div>
+      <p class="group">Te-waza, 1.º grupo do gokyo</p>
+      <p class="lead">Carregue o uke nas costas e projete por cima do ombro.</p>
+      <ol class="steps">
+        <li><span><b>Kuzushi</b>Puxe o uke para a frente até a ponta dos pés.</span></li>
+        <li><span><b>Tsukuri</b>Gire de costas, joelhos flexionados, abaixo do centro dele.</span></li>
+        <li><span><b>Kake</b>Estique as pernas e incline o tronco à frente.</span></li>
+      </ol>
+      <a class="video" href="#">
+        <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3.5v11l9-5.5z" fill="currentColor"/></svg>
+        Ver o vídeo oficial do Kodokan</a>
+    </article>
+    <div class="q">Qual o melhor time de futebol?</div>
+    <div class="matte" role="note">
+      <span class="mark" aria-hidden="true"></span>
+      <div><strong>Matte</strong><p>Só respondo sobre judô: técnicas, regras e história.</p></div>
+    </div>
+  </section>
+
+  <div class="dock">
+    <nav class="topics" role="group" aria-label="Assunto">
+      <button type="button" aria-pressed="true"><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
+      <button type="button" aria-pressed="false"><i lang="ja" aria-hidden="true">規</i>Regras</button>
+      <button type="button" aria-pressed="false"><i lang="ja" aria-hidden="true">歴</i>História</button>
+    </nav>
+    <form id="form">
+      <label for="query" class="sr">Sua pergunta</label>
+      <textarea id="query" rows="1" maxlength="1000" placeholder="Como entro no uchi-mata?"></textarea>
+      <button type="submit" aria-label="Perguntar">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+<script>
+  const examples = { "Técnicas": "Como entro no uchi-mata?", "Regras": "O que dá shido?", "História": "Quem foi Jigoro Kano?" };
+  const input = document.getElementById("query");
+  document.querySelectorAll(".topics button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".topics button").forEach((o) => o.setAttribute("aria-pressed", o === b));
+    input.placeholder = examples[b.textContent.trim().slice(1)];
+    input.focus();
+  }));
+  document.getElementById("form").addEventListener("submit", (e) => e.preventDefault());
+</script>
+</body>
+</html>

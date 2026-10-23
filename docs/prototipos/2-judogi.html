@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2b63">
+<title>Judô Chat (Judogi)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Direção 2, "Judogi": o azul do judogi de competição e o nome de cada técnica escrito em
+     kanji na vertical, ao lado da resposta, com a pronúncia da FGJ. O vermelho só aparece
+     quando a pergunta é recusada. */
+  :root {
+    --gi: #1e2b63; --gi-2: #273879; --gi-3: #31448f; --cotton: #eef1f8; --stitch: #a3aedb;
+    --muted: #c3cae6; --hinomaru: #d23b33;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--cotton); font: 400 17px/1.55 "Atkinson Hyperlegible", system-ui, sans-serif;
+         background: var(--gi);
+         /* trama do tecido, quase invisível */
+         background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.018) 0 2px, transparent 2px 5px); }
+  .app { max-width: 560px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  header { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 16px 12px;
+           border-bottom: 1px dashed rgba(163,174,219,.35); }
+  h1 { margin: 0; font: 800 1.35rem "Shippori Mincho B1", serif; }
+  header span { font: 600 1rem "Shippori Mincho B1", serif; color: var(--stitch); }
+
+  .intro { padding: 28px 16px 8px; }
+  .intro p { margin: 0 0 16px; color: var(--muted); max-width: 32ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { min-height: 44px; padding: 0 16px; border: 1px solid rgba(163,174,219,.45);
+         border-radius: 22px; background: transparent; color: var(--cotton); font: inherit; font-size: .95rem; cursor: pointer; }
+
+  #log { flex: 1; display: flex; flex-direction: column; gap: 18px; padding: 24px 16px; }
+  .q { align-self: flex-end; max-width: 85%; padding: 10px 16px; border-radius: 18px 18px 4px 18px;
+       background: var(--cotton); color: var(--gi); }
+
+  .a { display: grid; grid-template-columns: 52px 1fr; gap: 0 14px; }
+  .kanji { grid-row: 1 / span 3; writing-mode: vertical-rl; text-orientation: upright;
+       font: 800 2.6rem/1 "Shippori Mincho B1", serif; letter-spacing: .08em; color: var(--cotton);
+       padding: 6px 0; border-right: 2px solid var(--gi-3); text-align: start;
+       justify-self: start; }
+  .a h3 { margin: 0; font: 800 1.6rem/1.15 "Shippori Mincho B1", serif; }
+  .say { margin: 4px 0 0; font-size: .9rem; color: var(--stitch); }
+  .say b { color: var(--cotton); letter-spacing: .04em; }
+  .body { padding-top: 12px; }
+  .body p { margin: 0 0 12px; }
+  .body .pt { color: var(--muted); font-style: italic; }
+  .body ol { margin: 0 0 14px; padding-left: 22px; }
+  .body li { margin-bottom: 6px; }
+  .video { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px 8px 8px;
+       border-radius: 10px; background: var(--gi-2); color: var(--cotton); text-decoration: none; }
+  .video .seal { flex: 0 0 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+       background: var(--cotton); color: var(--gi); font: 800 .85rem "Shippori Mincho B1", serif; }
+  .video small { display: block; color: var(--stitch); font-size: .8rem; }
+
+  .no { display: grid; grid-template-columns: 52px 1fr; gap: 0 14px; align-items: start; }
+  .no .mark { width: 40px; height: 40px; margin-top: 2px; border-radius: 50%; background: var(--hinomaru); }
+  .no p { margin: 0; }
+  .no p + p { color: var(--muted); font-size: .92rem; margin-top: 4px; }
+
+  form { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: flex-end;
+       padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+       background: linear-gradient(to bottom, rgba(30,43,99,0), var(--gi) 30%); }
+  textarea { flex: 1; min-height: 50px; max-height: 140px; resize: none; padding: 13px 16px; border: 0;
+       border-radius: 25px; background: var(--cotton); color: var(--gi); font: inherit; font-size: 1rem; }
+  textarea::placeholder { color: #5b6694; }
+  form button { flex: 0 0 50px; height: 50px; border: 2px solid var(--cotton); border-radius: 50%;
+       background: var(--gi-3); color: var(--cotton); cursor: pointer; display: grid; place-items: center; }
+  :focus-visible { outline: 3px solid #ffd27a; outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Judô Chat</h1>
+    <span lang="ja">柔道</span>
+  </header>
+
+  <section class="intro">
+    <p>Pergunte sobre técnicas, regras e história. As respostas citam o Kodokan e trazem o vídeo oficial quando existe.</p>
+    <div class="chips">
+      <button type="button">Como faço o tai-otoshi?</button>
+      <button type="button">O que dá shido?</button>
+      <button type="button">Quem foi Jigoro Kano?</button>
+    </div>
+  </section>
+
+  <section id="log" aria-live="polite">
+    <div class="q">Como faço o seoi-nage?</div>
+    <article class="a">
+      <div class="kanji" lang="ja" aria-hidden="true">背負投</div>
+      <h3>Seoi-nage</h3>
+      <p class="say">Fala-se <b>SSEÔI NAGUE</b></p>
+      <div class="body">
+        <p class="pt">Projeção carregando nas costas</p>
+        <p>O tori desequilibra o uke para a frente, gira de costas e encaixa o corpo abaixo do centro de gravidade dele.</p>
+        <ol>
+          <li>Puxe pela gola e pela manga até o uke ficar na ponta dos pés.</li>
+          <li>Gire e entre com os joelhos flexionados.</li>
+          <li>Estique as pernas e incline o tronco para projetar por cima do ombro.</li>
+        </ol>
+        <a class="video" href="#"><span class="seal" lang="ja" aria-hidden="true">講</span>
+          <span>Assistir ao seoi-nage<small>Vídeo oficial do Kodokan</small></span></a>
+      </div>
+    </article>
+    <div class="q">Me ajuda com a lição de matemática?</div>
+    <div class="no">
+      <span class="mark" aria-hidden="true"></span>
+      <div><p>Esse assunto fica fora do tatame.</p><p>Respondo sobre técnicas, regras e história do judô.</p></div>
+    </div>
+  </section>
+
+  <form id="form">
+    <label for="query" class="sr">Sua pergunta</label>
+    <textarea id="query" rows="1" maxlength="1000" placeholder="Sua pergunta sobre judô"></textarea>
+    <button type="submit" aria-label="Perguntar">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </form>
+</div>
+<script>
+  const input = document.getElementById("query");
+  document.querySelectorAll(".chips button").forEach((b) => b.addEventListener("click", () => {
+    input.value = b.textContent; input.focus();
+  }));
+  document.getElementById("form").addEventListener("submit", (e) => e.preventDefault());
+</script>
+</body>
+</html>
