@@ -77,9 +77,10 @@ O script cria o usuário `judoka`, põe o código em `/opt/judoka-assistant`, ro
 O workflow `.github/workflows/deploy.yml` roda a cada push no `main` que mexe no backend
 (`src/` fora de `static/`, `data/`, `pyproject.toml`, `uv.lock`, `deploy/`), e também pela
 aba Actions (`workflow_dispatch`). Ele roda o `ruff` e os testes de `tests/api` e
-`tests/unit` e, se passarem, instala o commit na VM. Por último, confere a URL pública com um
-preflight de CORS, que não chama o provedor nem conta no rate limit. Mudanças só na página
-continuam saindo pelo `pages.yml`.
+`tests/unit` e, se passarem, instala o commit na VM. Por último, um job fora da tailnet
+confere a URL pública com um preflight de CORS, que não chama o provedor nem conta no rate
+limit. Ele fica fora porque, dentro da tailnet, o nome da VM resolve para o IP da tailnet e
+não para o Funnel. Mudanças só na página continuam saindo pelo `pages.yml`.
 
 O runner entra na tailnet como nó efêmero com a tag `tag:ci` e faz SSH na VM como
 `judoka-deploy`. A chave desse usuário só roda `/usr/local/sbin/judoka-deploy <commit>`, que
