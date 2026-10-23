@@ -18,3 +18,6 @@ O deploy da API é automático: cada push no `main` que mexe no backend passa pe
 `/usr/local/sbin/judoka-deploy <commit>` (`deploy/judoka-deploy`) por SSH dentro da tailnet.
 Merge no `main` é deploy em produção. A página sai pelo `pages.yml`. A configuração da VM, da
 tailnet e dos secrets está no README, seção "Deploy automático".
+
+Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos
+secrets) atualiza o README e este arquivo no mesmo PR.
