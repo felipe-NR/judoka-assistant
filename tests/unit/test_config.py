@@ -18,3 +18,8 @@ def test_refusal_fallbacks_are_accepted_on_sonnet() -> None:
 
 def test_openai_cache_lasts_the_whole_day_by_default() -> None:
     assert Settings(_env_file=None, provider="openai").openai_cache_ttl == "12h"
+
+
+def test_chat_page_can_be_turned_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("JUDO_CHAT_SERVE_CHAT_PAGE", "false")
+    assert Settings(_env_file=None).serve_chat_page is False

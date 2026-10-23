@@ -1,9 +1,15 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Turn, fgj_quotes_intact, video_groups
-from judo_chat.dependencies import AnswererDep, CorpusDep, GuardrailDep, RecognizerDep
+from judo_chat.dependencies import (
+    AnswererDep,
+    CorpusDep,
+    GuardrailDep,
+    RecognizerDep,
+    enforce_question_rate_limit,
+)
 from judo_chat.schemas import (
     AskRequest,
     AskResponse,
@@ -21,7 +27,7 @@ _GUARDRAIL_TURNS = 4
 _GUARDRAIL_TURN_CHARS = 400
 
 
-@router.post("/perguntar", response_model=AskResponse)
+@router.post("/perguntar", response_model=AskResponse, dependencies=[Depends(enforce_question_rate_limit)])
 async def ask(
     body: AskRequest,
     recognizer: RecognizerDep,
