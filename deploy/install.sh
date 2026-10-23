@@ -42,6 +42,10 @@ as_judoka git -C "$APP_DIR" fetch --prune origin
 as_judoka git -C "$APP_DIR" checkout --detach "origin/$REF" 2>/dev/null \
   || as_judoka git -C "$APP_DIR" checkout --detach "$REF"
 as_judoka bash -c "cd '$APP_DIR' && uv sync --frozen --no-dev --compile-bytecode"
+# Base de países do bloqueio por país (src/judo_chat/geoblock.py, PR #15). Sem rede para a
+# DB-IP, a base anterior continua valendo; sem base nenhuma, a API sobe sem o bloqueio.
+as_judoka bash -c "cd '$APP_DIR' && .venv/bin/python scripts/update_geoip.py" \
+  || echo "Aviso: não consegui atualizar a base de países (.geoip/)." >&2
 
 install -m 644 "$SRC_DIR/judoka-api.service" /etc/systemd/system/judoka-api.service
 systemctl daemon-reload

@@ -116,7 +116,7 @@ def test_cors_preflight_allows_github_pages(client: TestClient) -> None:
         headers={
             "Origin": "https://felipe-nr.github.io",
             "Access-Control-Request-Method": "POST",
-            "Access-Control-Request-Headers": "content-type,ngrok-skip-browser-warning",
+            "Access-Control-Request-Headers": "content-type",
         },
     )
     assert response.status_code == 200
