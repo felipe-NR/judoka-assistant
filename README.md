@@ -105,8 +105,9 @@ repositório `JUDO_CHAT_API_URL` e rode o workflow de novo.
    termos de regras, arbitragem e graduação, que só vão ao guardrail.
 2. O guardrail classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora` com o
    provedor configurado. Qualquer erro bloqueia a resposta.
-3. O provedor configurado responde com instruções e corpus (~46 mil tokens). Na Anthropic,
-   o bloco de system fica cacheado por 1 hora; na OpenAI, por 12 horas.
+3. O provedor configurado responde com instruções e corpus (~46 mil tokens no Haiku 5.5,
+   ~28 mil no gpt-6-luna). Na Anthropic, o bloco de system fica cacheado por 1 hora; na
+   OpenAI, por 12 horas.
 
 ## Custo com Anthropic
 
