@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1e2b63">
 <title>Judô Chat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,18 +21,22 @@
          background-color: var(--mat);
          /* placas de 1 x 2 m */
          background-image: linear-gradient(var(--seam) 2px, transparent 2px), linear-gradient(90deg, var(--seam) 2px, transparent 2px);
-         background-size: 96px 192px; background-attachment: fixed; }
-  main { max-width: 640px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+         background-size: 96px 192px; overflow: hidden; }
+  /* Cabeçalho e dock fixos nas pontas e só a conversa rola. Com o teclado aberto no celular,
+     a altura acompanha a área visível (interactive-widget e o script no fim); antes a página
+     rolava e o cabeçalho sumia, com o tatame aparecendo entre o campo e o teclado. */
+  main { max-width: 640px; margin: 0 auto; height: var(--app-height, 100dvh); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 
-  header { position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; justify-content: space-between;
-           padding: 18px 16px 12px; background: var(--weave-blue) var(--blue); color: #eef1f8; }
+  header { display: flex; align-items: baseline; justify-content: space-between;
+           padding: calc(18px + env(safe-area-inset-top)) 16px 12px; background: var(--weave-blue) var(--blue); color: #eef1f8; }
   h1 { margin: 0; font: 800 1.35rem "Shippori Mincho B1", serif; }
   header span { font: 600 1rem "Shippori Mincho B1", serif; color: var(--stitch); }
 
-  #log { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 20px 12px; }
-  .intro { margin: 0; color: var(--white); max-width: 34ch; }
-  /* O cabeçalho e o rodapé ficam fixos; a rolagem para cada mensagem desconta os dois. */
-  .msg { overflow-wrap: anywhere; scroll-margin: 76px 0 180px; }
+  #log { display: flex; flex-direction: column; gap: 12px; padding: 20px 12px; overflow-y: auto; overscroll-behavior: contain; }
+  /* Mesma folha das respostas: texto direto no tatame fica difícil de ler. */
+  .intro { margin: 0; padding: 26px 16px 16px; border-radius: 8px; color: var(--ink);
+       background: var(--weave-blue) top / 100% 10px no-repeat, linear-gradient(var(--blue), var(--blue)) top / 100% 10px no-repeat, var(--white); }
+  .msg { overflow-wrap: anywhere; scroll-margin: 12px 0; }
   .msg.user { align-self: flex-end; max-width: 85%; padding: 10px 16px; border-radius: 18px 18px 4px 18px;
               background: var(--blue); color: var(--white); font-weight: 700; white-space: pre-wrap; }
 
@@ -72,10 +76,10 @@
   .msg.refused strong { display: block; font: 800 1.25rem "Shippori Mincho B1", serif; color: var(--blue); }
   .msg.refused p { margin: 0; color: var(--muted); font-size: .95rem; }
 
-  .dock { position: sticky; bottom: 0; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
-       background: linear-gradient(to bottom, rgba(45,110,74,0), var(--mat) 18px); }
+  /* Faixa azul como a do cabeçalho, até a borda de baixo: o tatame não aparece sob o campo. */
+  .dock { padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); background: var(--weave-blue) var(--blue); }
   .topics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; padding: 4px;
-       border-radius: 14px; background: var(--weave-blue) var(--blue); box-shadow: 0 2px 0 var(--seam); }
+       border-radius: 14px; border: 1px solid rgba(163,174,219,.35); background: rgba(255,255,255,.06); }
   .topics button { min-height: 60px; padding: 6px 0 8px; border: 0; border-radius: 10px; background: transparent;
        color: #c3cae6; font: 700 .9rem "Atkinson Hyperlegible", sans-serif; cursor: pointer;
        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -83,12 +87,10 @@
   .topics button[aria-pressed="true"] { background: var(--white); color: var(--blue); }
   form { display: flex; gap: 8px; align-items: flex-end; }
   textarea { flex: 1; min-height: 52px; max-height: 140px; resize: none; padding: 14px 16px; border: 0;
-       border-radius: 26px; background: var(--white); color: var(--ink); font: inherit; font-size: 1rem;
-       box-shadow: 0 2px 0 var(--seam); }
+       border-radius: 26px; background: var(--white); color: var(--ink); font: inherit; font-size: 1rem; }
   textarea::placeholder { color: #6b7590; }
   form button { flex: 0 0 52px; height: 52px; padding: 0; border: 2px solid var(--blue); border-radius: 50%;
-       background: var(--white); color: var(--blue); cursor: pointer; display: grid; place-items: center;
-       box-shadow: 0 2px 0 var(--seam); }
+       background: var(--white); color: var(--blue); cursor: pointer; display: grid; place-items: center; }
   form button:disabled { opacity: .5; cursor: wait; }
   :focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
   .msg :focus-visible { outline-color: var(--blue); }
@@ -102,13 +104,13 @@
     <span lang="ja">柔道</span>
   </header>
   <section id="log" aria-live="polite">
-    <p class="intro">Pergunte sobre técnicas, regras e história do judô.</p>
+    <p class="intro">Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe.</p>
   </section>
   <div class="dock">
     <nav class="topics" role="group" aria-label="Assunto">
-      <button type="button" aria-pressed="true" data-example="Ex.: como entro no uchi-mata?"><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
-      <button type="button" aria-pressed="false" data-example="Ex.: o que dá shido?"><i lang="ja" aria-hidden="true">規</i>Regras</button>
-      <button type="button" aria-pressed="false" data-example="Ex.: quem foi Jigoro Kano?"><i lang="ja" aria-hidden="true">歴</i>História</button>
+      <button type="button" aria-pressed="true" data-example="Ex.: como entro no uchi-mata?" data-intro="Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe."><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
+      <button type="button" aria-pressed="false" data-example="Ex.: o que dá shido?" data-intro="Pontuação, shido e hansoku-make, e o que cai no seu próximo exame de faixa."><i lang="ja" aria-hidden="true">規</i>Regras</button>
+      <button type="button" aria-pressed="false" data-example="Ex.: quem foi Jigoro Kano?" data-intro="De Jigoro Kano e do Kodokan à chegada do judô ao Brasil."><i lang="ja" aria-hidden="true">歴</i>História</button>
     </nav>
     <form id="form">
       <label for="query" class="sr">Sua pergunta</label>
@@ -252,10 +254,12 @@
     div.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
-  // O filtro só troca o exemplo do campo; a API não recebe o assunto.
+  // O filtro só troca o exemplo do campo e o texto de boas-vindas; a API não recebe o assunto.
   document.querySelectorAll(".topics button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".topics button").forEach((o) => o.setAttribute("aria-pressed", o === b));
     input.placeholder = b.dataset.example;
+    const intro = log.querySelector(".intro");
+    if (intro) intro.textContent = b.dataset.intro;
     input.focus();
   }));
 
@@ -302,6 +306,20 @@
       input.focus();
     }
   });
+
+  // Navegadores que ignoram interactive-widget (Safari, por exemplo) encolhem só a área
+  // visível quando o teclado abre: a página segue essa altura e volta ao topo.
+  if (window.visualViewport) {
+    const fitViewport = () => {
+      // Com zoom de pinça, a área visível é um recorte da página; não mexe na altura.
+      if (window.visualViewport.scale > 1.01) return;
+      document.documentElement.style.setProperty("--app-height", window.visualViewport.height + "px");
+      window.scrollTo(0, 0);
+    };
+    window.visualViewport.addEventListener("resize", fitViewport);
+    window.visualViewport.addEventListener("scroll", fitViewport);
+    fitViewport();
+  }
 
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
