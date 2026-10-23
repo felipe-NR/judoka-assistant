@@ -36,6 +36,12 @@
   /* Mesma folha das respostas: texto direto no tatame fica difícil de ler. */
   .intro { margin: 0; padding: 26px 16px 16px; border-radius: 8px; color: var(--ink);
        background: var(--weave-blue) top / 100% 10px no-repeat, linear-gradient(var(--blue), var(--blue)) top / 100% 10px no-repeat, var(--white); }
+  .intro p { margin: 0 0 12px; }
+  /* Perguntas sugeridas, na estrutura do protótipo 1-faixa (docs/prototipos/README.md). */
+  .starters { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .starters button { width: 100%; padding: 10px 14px; border: 0; border-left: 4px solid var(--blue); border-radius: 6px;
+       background: #f1f3f9; color: var(--ink); text-align: left; font: 700 1rem/1.35 "Atkinson Hyperlegible", sans-serif; cursor: pointer; }
+  .starters small { display: block; margin-top: 2px; font-weight: 400; font-size: .8rem; color: var(--muted); }
   .msg { overflow-wrap: anywhere; scroll-margin: 12px 0; }
   .msg.user { align-self: flex-end; max-width: 85%; padding: 10px 16px; border-radius: 18px 18px 4px 18px;
               background: var(--blue); color: var(--white); font-weight: 700; white-space: pre-wrap; }
@@ -104,13 +110,16 @@
     <span lang="ja">柔道</span>
   </header>
   <section id="log" aria-live="polite">
-    <p class="intro">Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe.</p>
+    <div class="intro">
+      <p>Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe.</p>
+      <ul class="starters"></ul>
+    </div>
   </section>
   <div class="dock">
     <nav class="topics" role="group" aria-label="Assunto">
-      <button type="button" aria-pressed="true" data-example="Ex.: como entro no uchi-mata?" data-intro="Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe."><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
-      <button type="button" aria-pressed="false" data-example="Ex.: o que dá shido?" data-intro="Pontuação, shido e hansoku-make, e o que cai no seu próximo exame de faixa."><i lang="ja" aria-hidden="true">規</i>Regras</button>
-      <button type="button" aria-pressed="false" data-example="Ex.: quem foi Jigoro Kano?" data-intro="De Jigoro Kano e do Kodokan à chegada do judô ao Brasil."><i lang="ja" aria-hidden="true">歴</i>História</button>
+      <button type="button" aria-pressed="true" data-topic="tecnicas" data-example="Ex.: como entro no uchi-mata?" data-intro="Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe."><i lang="ja" aria-hidden="true">技</i>Técnicas</button>
+      <button type="button" aria-pressed="false" data-topic="regras" data-example="Ex.: o que dá shido?" data-intro="Pontuação, shido e hansoku-make, e o que cai no seu próximo exame de faixa."><i lang="ja" aria-hidden="true">規</i>Regras</button>
+      <button type="button" aria-pressed="false" data-topic="historia" data-example="Ex.: quem foi Jigoro Kano?" data-intro="De Jigoro Kano e do Kodokan à chegada do judô ao Brasil."><i lang="ja" aria-hidden="true">歴</i>História</button>
     </nav>
     <form id="form">
       <label for="query" class="sr">Sua pergunta</label>
@@ -254,12 +263,55 @@
     div.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
-  // O filtro só troca o exemplo do campo e o texto de boas-vindas; a API não recebe o assunto.
+  // Perguntas que o corpus responde; a linha de baixo diz de onde sai a resposta.
+  const STARTERS = {
+    tecnicas: [
+      ["Como faço o seoi-nage?", "Nage-waza, 1.º grupo do gokyo"],
+      ["Como entro no uchi-mata?", "Nage-waza, 2.º grupo do gokyo"],
+      ["Como sair do kesa-gatame?", "Katame-waza"],
+    ],
+    regras: [
+      ["O que dá shido?", "Penalidades (shido e hansoku-make)"],
+      ["Quanto tempo de osaekomi vale ippon?", "Pontuação e duração da luta"],
+      ["Quais técnicas são proibidas?", "Técnicas e ações proibidas em competição"],
+    ],
+    historia: [
+      ["Quem foi Jigoro Kano?", "Jigoro Kano e a fundação do Kodokan"],
+      ["Quando o judô chegou ao Brasil?", "O judô no Brasil"],
+      ["Desde quando o judô é olímpico?", "O judô nos Jogos Olímpicos e a IJF"],
+    ],
+  };
+
+  // Tocar numa sugestão já envia a pergunta.
+  function renderIntro(topicButton) {
+    const intro = log.querySelector(".intro");
+    if (!intro) return;
+    intro.querySelector("p").textContent = topicButton.dataset.intro;
+    const list = intro.querySelector(".starters");
+    list.replaceChildren();
+    for (const [question, source] of STARTERS[topicButton.dataset.topic]) {
+      const item = document.createElement("li");
+      const starter = document.createElement("button");
+      starter.type = "button";
+      starter.textContent = question;
+      const small = document.createElement("small");
+      small.textContent = source;
+      starter.appendChild(small);
+      starter.addEventListener("click", () => {
+        input.value = question;
+        form.requestSubmit();
+      });
+      item.appendChild(starter);
+      list.appendChild(item);
+    }
+  }
+  renderIntro(document.querySelector('.topics button[aria-pressed="true"]'));
+
+  // O filtro só troca o exemplo do campo e a abertura (texto e sugestões); a API não recebe o assunto.
   document.querySelectorAll(".topics button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".topics button").forEach((o) => o.setAttribute("aria-pressed", o === b));
     input.placeholder = b.dataset.example;
-    const intro = log.querySelector(".intro");
-    if (intro) intro.textContent = b.dataset.intro;
+    renderIntro(b);
     input.focus();
   }));
 
