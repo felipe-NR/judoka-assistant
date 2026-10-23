@@ -5,10 +5,17 @@ from fastapi.testclient import TestClient
 
 from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Answer, Turn
 from judo_chat.corpus.models import Corpus
-from judo_chat.dependencies import get_answerer, get_corpus, get_guardrail, get_recognizer
+from judo_chat.dependencies import (
+    get_answerer,
+    get_corpus,
+    get_guardrail,
+    get_question_rate_limiter,
+    get_recognizer,
+)
 from judo_chat.guardrail import Category, GuardrailResult
 from judo_chat.main import app
 from judo_chat.normalizer import Match, Recognizer
+from judo_chat.question_rate_limit import QuestionRateLimiter
 
 
 class FakeGuardrail:
@@ -43,6 +50,10 @@ def client(recognizer: Recognizer, answerer: FakeAnswerer, corpus: Corpus) -> It
     app.dependency_overrides[get_recognizer] = lambda: recognizer
     app.dependency_overrides[get_answerer] = lambda: answerer
     app.dependency_overrides[get_corpus] = lambda: corpus
+    unlimited = QuestionRateLimiter(
+        per_ip_per_minute=10_000, per_ip_per_day=10_000, global_per_day=10_000, max_tracked_ips=10
+    )
+    app.dependency_overrides[get_question_rate_limiter] = lambda: unlimited
     # Sem `with`, o lifespan não roda e nenhum cliente da Anthropic é criado.
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -146,3 +157,25 @@ def test_history_is_limited(client: TestClient) -> None:
     app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
     history = [{"role": "usuario", "text": "x"}] * 7
     assert client.post("/api/perguntar", json={"query": "oi", "history": history}).status_code == 422
+
+
+def test_rate_limited_question_gets_429_before_the_guardrail(client: TestClient, answerer: FakeAnswerer) -> None:
+    guardrail = FakeGuardrail("tecnica")
+    app.dependency_overrides[get_guardrail] = lambda: guardrail
+    limiter = QuestionRateLimiter(per_ip_per_minute=1, per_ip_per_day=10, global_per_day=10, max_tracked_ips=10)
+    app.dependency_overrides[get_question_rate_limiter] = lambda: limiter
+    assert client.post("/api/perguntar", json={"query": "como faço osoto-gari?"}).status_code == 200
+    response = client.post("/api/perguntar", json={"query": "como faço osoto-gari?"})
+    assert response.status_code == 429
+    assert 1 <= int(response.headers["Retry-After"]) <= 60
+    assert response.json()["detail"].startswith("Você fez muitas perguntas seguidas. Tente de novo em ")
+    assert len(guardrail.calls) == 1 and len(answerer.calls) == 1
+
+
+def test_global_limit_gets_503(client: TestClient) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
+    limiter = QuestionRateLimiter(per_ip_per_minute=10, per_ip_per_day=10, global_per_day=0, max_tracked_ips=10)
+    app.dependency_overrides[get_question_rate_limiter] = lambda: limiter
+    response = client.post("/api/perguntar", json={"query": "como faço osoto-gari?"})
+    assert response.status_code == 503
+    assert "limite de perguntas por hoje" in response.json()["detail"]

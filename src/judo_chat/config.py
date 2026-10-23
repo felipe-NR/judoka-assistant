@@ -55,6 +55,17 @@ class Settings(BaseSettings):
     use_refusal_fallbacks: bool = False
     # Origens que podem chamar a API pelo navegador (a página no GitHub Pages).
     cors_origins: tuple[str, ...] = ("https://felipe-nr.github.io",)
+    # Em produção a página fica só no GitHub Pages. Servida pela API, ela pergunta à própria
+    # origem e não passa pelo CORS; em 2026-10-23 robôs a abriram 19 vezes em 10 minutos.
+    serve_chat_page: bool = True
+    # Limites de perguntas (src/judo_chat/question_rate_limit.py), em janelas móveis. Uma
+    # pessoa lê cada resposta por mais de 10 s, e IPs de rede móvel (CGNAT) e de academia são
+    # compartilhados. O global corta abuso espalhado por muitos IPs.
+    question_limit_per_ip_per_minute: int = 8
+    question_limit_per_ip_per_day: int = 80
+    question_limit_global_per_day: int = 1000
+    # Cada IP guarda no máximo question_limit_per_ip_per_day instantes; a micro tem 1 GB.
+    question_limit_max_tracked_ips: int = 5000
 
     @model_validator(mode="after")
     def _fallbacks_need_a_supported_model(self) -> Self:
