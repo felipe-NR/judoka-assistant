@@ -90,6 +90,14 @@ async def test_allows_in_scope_category() -> None:
     assert [q["name"] for q in call["questions"]] == ["categoria", "agressao", "instrucoes"]  # type: ignore[index, union-attr]
 
 
+async def test_logs_token_usage(caplog: pytest.LogCaptureFixture) -> None:
+    probabilities = {"tecnica": 0.9, "historia": 0.02, "regras": 0.05, "fora": 0.03}
+    guardrail, _ = _guardrail(_decision(_category("tecnica", probabilities), _harm(0.01), _instructions(0.0)))
+    with caplog.at_level("INFO", logger="judo_chat.guardrail"):
+        await guardrail.classify("como faço osoto-gari?")
+    assert "guardrail: model=gpt-6-luna cache_read=0 input=1400 output=0" in caplog.messages
+
+
 async def test_sends_recognized_rule_terms() -> None:
     probabilities = {"tecnica": 0.0, "historia": 0.0, "regras": 0.9, "fora": 0.1}
     guardrail, client = _guardrail(_decision(_category("regras", probabilities), _harm(0.0), _instructions(0.0)))

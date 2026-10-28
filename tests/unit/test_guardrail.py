@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import anthropic
 import httpx
@@ -13,10 +13,19 @@ class FakeStopDetails:
 
 
 @dataclass
+class FakeUsage:
+    input_tokens: int = 1400
+    output_tokens: int = 55
+    cache_read_input_tokens: int | None = None
+
+
+@dataclass
 class FakeParsed:
     stop_reason: str
     parsed_output: GuardrailOutput | None
     stop_details: FakeStopDetails | None = None
+    model: str = "claude-haiku-5-5"
+    usage: FakeUsage = field(default_factory=FakeUsage)
 
 
 class FakeMessages:

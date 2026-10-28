@@ -13,7 +13,14 @@ from openai import AsyncOpenAI
 from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Answer, Turn, build_system_text, build_user_message
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
-from judo_chat.guardrail import GUARDRAIL_SYSTEM, GuardrailOutput, GuardrailResult, _closed, guardrail_content
+from judo_chat.guardrail import (
+    GUARDRAIL_SYSTEM,
+    GuardrailOutput,
+    GuardrailResult,
+    _closed,
+    guardrail_content,
+    log_usage,
+)
 from judo_chat.normalizer import Match
 from judo_chat.relations import Relations
 
@@ -103,6 +110,11 @@ class OpenAIGuardrail:
                 prompt_cache_key=_GUARDRAIL_CACHE_KEY,
                 store=False,
             )
+            usage = response.usage
+            if usage is not None:
+                log_usage(
+                    response.model, usage.input_tokens_details.cached_tokens, usage.input_tokens, usage.output_tokens
+                )
             if response.status != "completed":
                 return _closed(f"status:{response.status}")
             parsed = GuardrailOutput.model_validate_json(response.output_text)
@@ -168,6 +180,8 @@ class OpenAIDecisionsGuardrail:
             logger.exception("guardrail: erro inesperado")
             return _closed("unexpected")
 
+        usage = decision.usage
+        log_usage(decision.model, usage.input_tokens_details.cached_tokens, usage.input_tokens, usage.output_tokens)
         answers = {answer.name: answer for answer in decision.answers}
         predicates: dict[str, float] = {}
         for name in self._predicate_thresholds:
