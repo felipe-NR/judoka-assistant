@@ -1,7 +1,7 @@
 # Testa e instala a API na VM de produção a cada push no main que mexe no backend.
 # O runner entra na tailnet como nó efêmero (tag:ci) e faz SSH na VM com uma chave que só
-# roda /usr/local/sbin/judoka-deploy <commit> (ver deploy/setup-ci.sh). Configuração no
-# README, seção "Deploy automático".
+# roda /usr/local/sbin/judoka-deploy <commit> (ver deploy/setup-ci.sh). Configuração em
+# docs/operacao/deploy.md, seção "Deploy automático".
 name: Deploy da API
 
 on:
