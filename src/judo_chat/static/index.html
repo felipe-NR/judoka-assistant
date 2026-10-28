@@ -380,6 +380,7 @@
     if (intro) intro.remove();
     addUser(query);
     input.value = "";
+    fitInput();
     button.disabled = true;
     const waiting = addWaiting();
     try {
@@ -427,6 +428,13 @@
     window.visualViewport.addEventListener("scroll", fitViewport);
     fitViewport();
   }
+
+  // O campo cresce com o texto até o max-height do CSS; daí em diante rola por dentro.
+  function fitInput() {
+    input.style.height = "auto";
+    input.style.height = input.scrollHeight + "px";
+  }
+  input.addEventListener("input", fitInput);
 
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
