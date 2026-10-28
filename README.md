@@ -8,13 +8,22 @@ https://felipe-nr.github.io/judoka-assistant/.
 
 ## Por que existe
 
-No Brasil, muita técnica de judô é conhecida por um nome popular, às vezes usado de forma
-errada há anos ("ashi barai", "morote seoi-nage", "mata-leão"), e as fontes abertas sobre
+Pratico judô, e no meu dojô a sensei Duda precisava procurar à mão o nome de uma técnica numa
+tabela de mais de 40 páginas, onde muitos nomes são parecidos, e depois buscar no YouTube um
+vídeo com a aplicação correta.
+
+O problema é comum: no Brasil, muita técnica é conhecida por um nome popular, às vezes usado de
+forma errada há anos ("ashi barai", "morote seoi-nage", "mata-leão"), e as fontes abertas sobre
 técnicas, como a API da IJF e as listas de vídeos, não trazem texto em português. O assistente
 responde em pt-BR a partir do Curso de Waza da Federação Gaúcha de Judô (FGJ), usa o nome
 oficial do Kodokan e avisa quando a pergunta usou um nome popular. Diante de um nome ambíguo,
 ele apresenta as técnicas candidatas em vez de escolher uma em silêncio. Cada técnica citada
 vem com o vídeo do Kodokan, o kanji e a pronúncia.
+
+Como projeto de portfólio, comparei três abordagens (o corpus inteiro no contexto com cache,
+RAG com busca híbrida e RAG agentic) e fiquei com a primeira, o CAG. A comparação está em
+[`docs/historico/`](docs/historico/propostas-iniciais.md) e a decisão, no
+[ADR 0001](docs/decisoes/0001-manter-cag.md).
 
 ## Como funciona
 
