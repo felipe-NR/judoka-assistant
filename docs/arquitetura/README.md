@@ -1,34 +1,32 @@
 # Arquitetura
 
-Diagramas da arquitetura da proposta A (CAG: o corpus inteiro no contexto, com cache de
-prompt). Cada diagrama tem uma página HTML com SVG embutido, que é a fonte, e um PNG
+Diagramas da arquitetura CAG (o corpus inteiro no contexto, com cache de prompt). Cada
+diagrama tem uma página HTML com SVG embutido, que é a fonte, e um PNG
 exportado dela para aparecer aqui no GitHub.
 
 ## Anatomia do prompt
 
-As partes do prompt de resposta e onde fica o corte do cache. Página:
-[`prompt-cag.html`](prompt-cag.html).
+As partes do prompt do modelo de resposta e onde fica o corte do cache. O guardrail recebe
+outro prompt, sem o corpus.
 
 ![Pilha das partes do prompt, com o corte do cache entre o prefixo e a mensagem da pergunta](prompt-cag.png)
 
 ## Uma pergunta, ponta a ponta
 
-Uma pergunta da página até a resposta, com as duas chamadas ao provedor. Página:
-[`pergunta-sequencia.html`](pergunta-sequencia.html).
+Uma pergunta da página até a resposta, com as duas chamadas ao provedor: o guardrail, um
+classificador pela Decisions API, e o modelo de resposta, que gera o texto pela Responses API.
 
 ![Sequência de uma pergunta entre página, API, guardrail e modelo de resposta](pergunta-sequencia.png)
 
 ## Do dado ao prefixo
 
-Das fontes e da curadoria até o prefixo e o reconhecedor. Página:
-[`corpus-fluxo.html`](corpus-fluxo.html).
+Das fontes e da curadoria até o prefixo e o reconhecedor.
 
 ![Fluxo do corpus das fontes até a chamada ao modelo](corpus-fluxo.png)
 
 ## Onde roda
 
-Onde cada parte roda, a entrada pública e o caminho do deploy. Página:
-[`producao-implantacao.html`](producao-implantacao.html).
+Onde cada parte roda, a entrada pública e o caminho do deploy.
 
 ![Zonas de implantação: internet pública, GitHub e tailnet com a VM](producao-implantacao.png)
 
