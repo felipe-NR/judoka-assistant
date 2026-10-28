@@ -1,4 +1,4 @@
-"""Geração da resposta com o corpus inteiro num bloco de system cacheado (proposta A)."""
+"""Geração da resposta com o corpus inteiro num bloco de system cacheado (CAG)."""
 
 import logging
 import re
