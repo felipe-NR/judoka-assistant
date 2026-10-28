@@ -21,8 +21,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Runner fixo: o ubuntu-latest passou a migrar para o Ubuntu 26 em 2026-10-19
+  # (actions/runner-images#14748) e os jobs ainda não rodaram nele.
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

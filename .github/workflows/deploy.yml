@@ -26,8 +26,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Runner fixo: o ubuntu-latest passou a migrar para o Ubuntu 26 em 2026-10-19
+  # (actions/runner-images#14748) e os jobs ainda não rodaram nele.
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       # Desde a v8 o setup-uv não publica tags de major (@v10), só versões exatas.
@@ -41,7 +43,7 @@ jobs:
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     steps:
       - uses: tailscale/github-action@v3
@@ -68,7 +70,7 @@ jobs:
   # como para qualquer visitante (run 40030107154, 2026-10-23).
   verify:
     needs: deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # Preflight de CORS: passa pelo Funnel e pela aplicação sem chamar o provedor nem
       # contar no rate limit.
