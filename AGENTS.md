@@ -23,3 +23,10 @@ tailnet e dos secrets está no README, seção "Deploy automático".
 Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos
 secrets) atualiza o README e este arquivo no mesmo PR. Isso inclui trocar o runner, fixo em
 `ubuntu-24.04`, ou a versão de uma action.
+
+## Arquitetura
+
+Os diagramas de `docs/arquitetura/` mostram o prompt e o corte do cache, o caminho de uma
+pergunta, a carga do corpus e onde a API roda. Mudança que altere algum desses pontos atualiza
+os diagramas no mesmo PR: edite `scripts/diagramas_arquitetura.py` e rode
+`uv run python scripts/diagramas_arquitetura.py docs/arquitetura`.
