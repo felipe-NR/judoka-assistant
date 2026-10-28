@@ -22,11 +22,6 @@ Shippori Mincho B1 e Atkinson Hyperlegible vêm do Google Fonts, então cada vis
 requisições a um terceiro. Servir os arquivos junto com a página (`src/judo_chat/static/`)
 tira essa dependência.
 
-### Tema escuro
-
-A página anterior seguia `prefers-color-scheme: dark`. A atual tem paleta fixa (tatame,
-judogi branco e azul) e precisa de uma versão escura própria.
-
 ## GitHub Actions
 
 Avisos que aparecem nas annotations dos runs do `deploy.yml` (run 40030107154) e do
