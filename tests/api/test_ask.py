@@ -146,6 +146,13 @@ def test_video_groups_carry_the_fgj_kanji(client: TestClient, answerer: FakeAnsw
     assert body["video_groups"][0]["kanji"] == "背負投"
 
 
+def test_video_groups_carry_the_pronunciation(client: TestClient, answerer: FakeAnswerer) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
+    answerer.text = "### Seoi-nage\nTexto."
+    body = client.post("/api/perguntar", json={"query": "como faço o seoi-nage?"}).json()
+    assert body["video_groups"][0]["pronunciation"] == "SSEOI NAGUE"
+
+
 def test_follow_up_uses_history(client: TestClient, answerer: FakeAnswerer) -> None:
     guardrail = FakeGuardrail("tecnica")
     app.dependency_overrides[get_guardrail] = lambda: guardrail
