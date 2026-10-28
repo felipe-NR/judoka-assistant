@@ -170,12 +170,22 @@ tokens; uma resposta tem em mediana 135 tokens de saída.
 
 O tráfego foi de 1 a 19 perguntas por dia, então as 6 gravações somaram 76% dos US$ 0,055 do
 período. Com o TTL padrão de 30 minutos, a gravação custa metade, mas o mesmo tráfego teria 14
-gravações e sairia cerca de 9% mais caro que o observado. Duas gravações vieram 4,5 e 5,7 horas depois da
-pergunta anterior, dentro das 12 horas pedidas e sem mudança no prefixo.
+gravações e sairia cerca de 9% mais caro que o observado. Duas gravações vieram 4,5 e 5,7
+horas depois da pergunta anterior, dentro das 12 horas pedidas e sem mudança no prefixo.
 
-O guardrail não registra tokens nos logs. A Decisions API cobra só a entrada, sem cache, a
-US$ 0,10/M; com a ordem de grandeza do guardrail na Anthropic (~1.400 tokens), seria cerca de
-US$ 0,00014 por pergunta, uma estimativa e não uma medida.
+O guardrail registra os tokens de cada classificação desde o PR #26; antes disso, o custo dele
+era uma estimativa: a Decisions API cobra só a entrada, sem cache, a US$ 0,10/M, e com a ordem
+de grandeza do guardrail na Anthropic (~1.400 tokens) seriam cerca de US$ 0,00014 por pergunta.
+
+Para medir de novo e acompanhar as gravações antes do TTL, leia o journal da VM por SSH dentro
+da tailnet e passe para o script, num checkout local:
+
+```bash
+ssh <usuário>@<vm> 'sudo journalctl -u judoka-api -o short-iso' | uv run python scripts/custo_openai.py
+```
+
+O relatório dá o custo das respostas quentes e frias, do guardrail e de cada dia, e lista as
+gravações que vieram antes do TTL, dizendo se a API reiniciou entre as duas perguntas.
 
 ## Custo com Anthropic
 
