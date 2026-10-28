@@ -4,6 +4,7 @@ Assistente que responde em português do Brasil a perguntas sobre técnicas, his
 regras do judô, e recusa qualquer outro assunto. Implementa a proposta A de
 [`docs/propostas.md`](docs/propostas.md): o corpus inteiro vai no contexto do modelo, com
 cache de prompt, depois de um guardrail de escopo que falha fechado.
+Os diagramas da arquitetura estão em [`docs/arquitetura/`](docs/arquitetura/README.md).
 
 ## Rodar
 
