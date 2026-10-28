@@ -8,6 +8,7 @@ from judo_chat.corpus.models import (
     Document,
     FgjTechnique,
     FgjTerm,
+    Phases,
     PopularName,
     RuleTerm,
     Technique,
@@ -57,6 +58,18 @@ def _read_fgj(fgj_dir: Path, known: set[str]) -> dict[str, FgjTechnique]:
         if technique_id not in known:
             raise CorpusError(f"{path}: técnica inexistente {technique_id!r}")
         result[technique_id] = FgjTechnique.model_validate(item)
+    return result
+
+
+def _read_phases(path: Path, known: set[str]) -> dict[str, Phases]:
+    if not path.exists():
+        return {}
+    result = {}
+    for item in _read_yaml_list(path):
+        technique_id = str(item.pop("id"))
+        if technique_id not in known:
+            raise CorpusError(f"{path}: técnica inexistente {technique_id!r}")
+        result[technique_id] = Phases.model_validate(item)
     return result
 
 
@@ -151,6 +164,7 @@ def load_corpus(data_dir: Path) -> Corpus:
 
     fgj = _read_fgj(data_dir / "fgj", known)
     fgj_terms = _read_fgj_terms(data_dir / "fgj", techniques)
+    phases = _read_phases(data_dir / "fases" / "tagusari_2016.yaml", known)
 
     documents = [
         _read_document(path, theme)
@@ -175,6 +189,7 @@ def load_corpus(data_dir: Path) -> Corpus:
                             "popular_names": frozenset(popular_by_technique[t.id]),
                             "fgj": fgj.get(t.id),
                             "fgj_term": fgj_terms.get(t.id),
+                            "phases": phases.get(t.id),
                         }
                     )
                     for t in techniques

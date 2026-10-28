@@ -1,0 +1,81 @@
+# Kuzushi, tsukuri e kake das seis te-waza do gokyo, copiados da seção "Análise das técnicas"
+# de Tagusari, F. I.; Santos, F. G.; Tani, G. "Análise da complexidade das técnicas de te waza
+# do judô pertencentes ao gokyo". Journal of Physical Education, v. 27, e2756, 2016.
+# DOI 10.4025/jphyseduc.v27i1.2756. Licença Creative Commons Atribuição 4.0 (CC BY 4.0).
+# Texto da versão em português (periodicos.uem.br/ojs/index.php/RevEducFis/article/download/28791/18005).
+#
+# Os autores descrevem as técnicas pela forma do kata, com o uke reagindo à condução do tori.
+# Alterações em relação ao original, conferidas em 2026-10-28:
+# - saem os números dos componentes, como "(1)";
+# - no Kata-guruma, "sob os ombros" e "sob o pescoço" viram "sobre", como na versão em inglês
+#   do mesmo artigo ("over the shoulders", "over his neck");
+# - no Sumi-otoshi, "ao mesmo, tempo puxar" vira "ao mesmo tempo, puxar".
+- id: seoi-nage
+  kuzushi: >-
+    realizar um passo à frente com o pé direito e em seguida executar a ação de empurrar; ao
+    Uke resistir ao movimento, recuar o pé direito; e, ao mesmo tempo, com ambos os braços,
+    “puxar” o Uke provocando o desequilíbrio
+  tsukuri: >-
+    para definir o posicionamento, realizar um giro para esquerda (hidari ushiro no sabaki); e
+    colocar o pé direito em frente ao Uke; estabilizar o posicionamento completo com flexão dos
+    joelhos; e posicionar o pé esquerdo
+  kake: >-
+    puxar o braço direito do Uke; flexionar o cotovelo direito; inserir o cotovelo direito
+    embaixo da axila do Uke; e posicionar o Uke nas suas costas; para executar a projeção,
+    estender os joelhos; flexionar o quadril; puxar o Uke para baixo com ambas as mãos; e rodar
+    o tronco para a direita
+- id: tai-otoshi
+  kuzushi: >-
+    realizar um passo para trás com o pé direito; e, ao mesmo tempo, “puxar” o Uke para cima
+    provocando o desequilíbrio
+  tsukuri: >-
+    “girar” para trás com o pé esquerdo (hidari ushiro no sabaki); e posicionar o pé direito,
+    “passando” lateralmente o pé direito do Uke
+  kake: >-
+    “puxar” o Uke para frente e para baixo; e, ao mesmo tempo, com braço direito “empurrar” na
+    direção do movimento finalizando a ação da projeção
+- id: kata-guruma
+  kuzushi: >-
+    realizar um passo para trás com a perna esquerda (hidari ushiro no sabaki); e, ao mesmo
+    tempo, conduzir o Uke com ambas as mãos; ao Uke resistir ao movimento, “puxar” o braço
+    direito do Uke
+  tsukuri: >-
+    fletir os joelhos; posicionar a perna direita entre as pernas do Uke; posicionar o braço em
+    torno da perna direita do Uke
+  kake: >-
+    carregar o adversário sobre os ombros; puxar o braço esquerdo do Uke; estabilizar a postura;
+    puxar para baixo com o braço esquerdo; e, ao mesmo tempo, empurrar com o braço direito o Uke
+    para cima; rotacionar o corpo do Uke sobre o pescoço
+- id: sukui-nage
+  kuzushi: >-
+    realizar o desequilíbrio diagonal posterior para esquerda (hidari ushiro no kuzushi)
+  tsukuri: >-
+    realizar um passo com a perna direita atrás do Uke; para o posicionamento, circundar o
+    quadril do Uke com o braço direito (pela frente), e segurar a parte posterior da perna
+    direita; ao mesmo tempo, posicionar o braço esquerdo na parte posterior da perna esquerda do
+    Uke
+  kake: >-
+    levantar o oponente sob a parte frontal do quadril (direito)
+- id: uki-otoshi
+  kuzushi: >-
+    realizar um passo grande para trás com o pé direito; Uke reage com um passo para frente com
+    o pé esquerdo, provocando o desequilíbrio anterior diagonal esquerda (hidari mae no kuzushi)
+  tsukuri: >-
+    o Uke começa a distribuição do peso em seu pé esquerdo; recuar o pé esquerdo
+  kake: >-
+    para a projeção do adversário, três componentes ocorrem ao mesmo tempo e são “disparados”
+    durante a distribuição do peso do Uke: realizar um giro esquerdo do tórax; empurrar com os
+    braços o Uke para cima; e, em seguida, puxar para baixo
+- id: sumi-otoshi
+  kuzushi: >-
+    realizar um passo para trás com o pé direito; Uke reage com um passo para frente com a perna
+    esquerda
+  tsukuri: >-
+    duas ações são identificadas que propiciam a projeção. A primeira objetiva a estabilização,
+    abaixar o quadril, fletir levemente os joelhos; realizar um passo com o pé esquerdo diagonal
+    para frente; a segunda ação objetiva empurrar o oponente para a direção posterior direita,
+    sendo esta causada pelas ações: empurrar o oponente com o braço direito; e, ao mesmo tempo,
+    puxar com o braço esquerdo
+  kake: >-
+    o Uke é empurrado diagonalmente na direção posterior direita, continuar o movimento de
+    empurrar com o braço direito; e puxar com o braço esquerdo

@@ -45,6 +45,17 @@ def test_user_message_carries_the_fgj_sheet(corpus: Corpus, recognizer: Recogniz
     assert "youtu" not in message
 
 
+def test_user_message_carries_the_phases(corpus: Corpus, recognizer: Recognizer) -> None:
+    query = "Como se faz o tai otoshi?"
+    message = build_user_message(query, recognizer.find(query), corpus)
+    phases = corpus.technique("tai-otoshi").phases
+    assert phases is not None
+    assert f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"' in message
+    assert f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"' in message
+    # Sem fonte, o modelo não monta as fases sozinho.
+    assert "não divida a técnica em fases" in build_system_text(corpus)
+
+
 def test_user_message_carries_pronunciation_guide(corpus: Corpus) -> None:
     message = build_user_message("Como se pronuncia hiza guruma?", [], corpus)
     assert "Guia de pronúncia da FGJ" in message

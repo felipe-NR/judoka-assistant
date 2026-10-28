@@ -19,9 +19,15 @@ trechos dos protótipos:
 
 | Assunto | Texto | Origem |
 |-|-|-|
-| Técnicas | Kuzushi, tsukuri e kake de cada técnica, com o vídeo oficial do Kodokan quando existe. | passos da resposta do seoi-nage (todos) e "trazem o vídeo oficial quando existe" (`2-judogi`) |
+| Técnicas | Descrição do Kodokan e princípio de cada técnica, com o vídeo oficial quando existe. | "trazem o vídeo oficial quando existe" (`2-judogi`); a descrição e o princípio são os textos da FGJ que a resposta cita |
 | Regras | Pontuação, shido e hansoku-make, e o que cai no seu próximo exame de faixa. | "com o que cai no seu próximo exame" (`1-faixa`) e o exemplo "O que dá shido?" (`15-gola`) |
 | História | De Jigoro Kano e do Kodokan à chegada do judô ao Brasil. | exemplos "Quem foi Jigoro Kano?" (`15-gola`) e "quando o judô chegou ao Brasil?" (`3-tatame`) |
+
+Até 2026-10-28 o texto de Técnicas era "Kuzushi, tsukuri e kake de cada técnica", tirado dos
+passos da resposta do seoi-nage. Os protótipos escreveram esses passos à mão, e a resposta não
+tinha como cumprir a frase. A base tem as três fases só das seis te-waza do gokyo
+(`data/fases/tagusari_2016.yaml`); a fonte que falta para as outras está em
+`docs/validacoes-externas.md`, seção "Kuzushi, tsukuri e kake por técnica".
 
 ## Decisão: abertura com perguntas sugeridas (2026-10-23)
 

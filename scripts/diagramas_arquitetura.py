@@ -651,7 +651,7 @@ def production_deployment():
         "<code>127.0.0.1:8010</code>; ali o bloqueio por país e o rate limit agem antes de qualquer chamada a provedor. O GitHub Actions entra na "
         "tailnet como nó efêmero com <code>tag:ci</code> e a chave dele só roda <code>judoka-deploy &lt;commit&gt;</code>, que recusa commit fora do "
         "<code>main</code>. A API chama a OpenAI pela Decisions API (guardrail) e pela Responses API (resposta); com "
-        '<code>JUDO_CHAT_PROVIDER=anthropic</code>, as duas chamadas vão à Messages API. Detalhes em <code>docs/operacao/deploy.md</code>.',
+        "<code>JUDO_CHAT_PROVIDER=anthropic</code>, as duas chamadas vão à Messages API. Detalhes em <code>docs/operacao/deploy.md</code>.",
     )
 
 

@@ -51,6 +51,10 @@ def render_technique(technique: Technique) -> str:
         lines.append(f"Princípio/ponto de atenção (FGJ): {fgj.principio}")
     elif technique.description_pt_br:
         lines.append(f"Descrição: {technique.description_pt_br}")
+    if phases := technique.phases:
+        lines.append(f"Kuzushi (Tagusari 2016): {phases.kuzushi}")
+        lines.append(f"Tsukuri (Tagusari 2016): {phases.tsukuri}")
+        lines.append(f"Kake (Tagusari 2016): {phases.kake}")
     return "\n".join(lines)
 
 
@@ -77,7 +81,11 @@ def render_corpus(corpus: Corpus) -> str:
         "nomenclatura do Kodokan. Os campos (FGJ) vêm do Curso de Waza da Federação Gaúcha de Judô "
         '(2026), fonte primária, e descrevem as técnicas para o tori destro; no kyo-grupo, "1º - '
         'TE-WAZA" é o 1º grupo do Gokyo. As linhas "Descrição" sem (FGJ) foram redigidas para esta '
-        "base. Kanji e vídeos não estão aqui: vêm nas fichas anexadas à pergunta.",
+        "base. As linhas Kuzushi, Tsukuri e Kake (Tagusari 2016), só nas seis te-waza do Gokyo, vêm "
+        'de Tagusari, Santos e Tani, "Análise da complexidade das técnicas de te waza do judô '
+        'pertencentes ao gokyo" (Journal of Physical Education, 2016, licença CC BY 4.0), que '
+        "descreve as fases pela forma do kata. Kanji e vídeos não estão aqui: vêm nas fichas "
+        "anexadas à pergunta.",
         "# GLOSSÁRIO DE TÉCNICAS",
         "\n\n".join(render_technique(t) for t in corpus.techniques if _in_block(t)),
         "# NOMES POPULARES",

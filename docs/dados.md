@@ -13,6 +13,7 @@ o que ainda falta confirmar com fontes externas estão em
 | `data/graduacao/*.md` | Exames de faixa (cinza a marrom), Gokyo, sequências e contragolpes, do Projeto Budô | Sim |
 | `docs/fontes/fecju_kodokan_videos.csv` | Vídeos do canal do Kodokan listados pela FECJU | Sim |
 | `data/fgj/*.yaml` | Fonte primária: tradução, descrição Kodokan, princípio, kyo-grupo e kanji das 100 técnicas, glossário e pronúncia da FGJ | Não, gerado por `scripts/import_fgj.py` |
+| `data/fases/tagusari_2016.yaml` | Kuzushi, tsukuri e kake das seis te-waza do gokyo, copiados de Tagusari, Santos e Tani (2016), CC BY 4.0 | Só para corrigir a cópia; cada alteração em relação ao artigo fica no cabeçalho |
 | `data/glossario/tecnicas.yaml` | Glossário final | Não, é gerado |
 
 Depois de editar a curadoria, gere o glossário de novo (o script lê o CSV do

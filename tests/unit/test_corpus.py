@@ -88,6 +88,17 @@ def test_loader_rejects_rule_term_missing_from_its_document(tmp_path: Path) -> N
         load_corpus(data)
 
 
+def test_loader_rejects_phases_of_unknown_technique(tmp_path: Path) -> None:
+    data = _copy_data(tmp_path)
+    phases = data / "fases" / "tagusari_2016.yaml"
+    phases.write_text(
+        phases.read_text("utf-8") + "- id: nao-existe\n  kuzushi: a\n  tsukuri: b\n  kake: c\n",
+        "utf-8",
+    )
+    with pytest.raises(CorpusError, match="nao-existe"):
+        load_corpus(data)
+
+
 def test_rule_terms_are_loaded(corpus: Corpus) -> None:
     assert "Sono-mama" in {term.termo for term in corpus.rule_terms}
 
@@ -110,6 +121,22 @@ def test_render_uses_fgj_description_verbatim(corpus: Corpus) -> None:
     assert fgj is not None
     assert f"Descrição Kodokan (FGJ): {fgj.descricao_kodokan}" in text
     assert "\nDescrição: " not in text
+
+
+def test_phases_cover_the_six_te_waza_of_the_gokyo(corpus: Corpus) -> None:
+    with_phases = {t.id for t in corpus.techniques if t.phases is not None}
+    assert with_phases == {"seoi-nage", "tai-otoshi", "kata-guruma", "sukui-nage", "uki-otoshi", "sumi-otoshi"}
+
+
+def test_render_carries_the_phases_with_their_source(corpus: Corpus) -> None:
+    from judo_chat.corpus.render import render_technique
+
+    phases = corpus.technique("tai-otoshi").phases
+    assert phases is not None
+    text = render_technique(corpus.technique("tai-otoshi"))
+    assert f"Kuzushi (Tagusari 2016): {phases.kuzushi}" in text
+    assert f"Kake (Tagusari 2016): {phases.kake}" in text
+    assert "Tagusari" not in render_technique(corpus.technique("uchi-mata"))
 
 
 def test_block_leaves_out_recognizer_only_fields(corpus: Corpus) -> None:

@@ -62,6 +62,32 @@ que ela libera vira um item do roadmap.
 - **Libera:** ajustar `src/judo_chat/pronunciation.py`, se a resposta for outra.
 - **Desde:** 2026-10-28.
 
+### Kuzushi, tsukuri e kake por técnica
+
+- **Falta:** uma fonte que descreva as três fases das outras técnicas de projeção. A FGJ não
+  separa as fases, e o prompt não deixa o modelo dividir a descrição dela por conta própria.
+  Fontes candidatas, levantadas na web em 2026-10-28:
+  - Gomes et al. (2009), [Golpe de judô o soto gari: validação de lista de
+    checagem](https://portalrevistas.ucb.br/index.php/RBCM/article/download/1032/1442), Revista
+    Brasileira de Ciência e Movimento 17(4): o kuzushi do Osoto-gari separado, o tsukuri e o kake
+    juntos. Licença não verificada. O mesmo grupo validou uma lista do Tai-otoshi (Academos,
+    2008), não consultada.
+  - Daigo, Kodokan Judo: Throwing Techniques (Kodansha, 2005): cobre as técnicas de projeção do
+    Kodokan, mas não deu para confirmar se separa as fases. Livro pago, sem licença de reuso.
+  - Nippon Budokan, guia de ensino de judô, capítulo III: descreve poucas projeções básicas
+    (Hiza-guruma, por exemplo) com a direção do kuzushi e o tai-sabaki, sem as três fases
+    nomeadas.
+  - O site do Kodokan não tem página por técnica, só a lista com os vídeos.
+- **Confirmado:** em 2026-10-28, as seis te-waza do gokyo (Seoi-nage, Tai-otoshi, Kata-guruma,
+  Sukui-nage, Uki-otoshi e Sumi-otoshi), com o texto em português de Tagusari, Santos e Tani
+  (2016), [Análise da complexidade das técnicas de te waza do judô pertencentes ao
+  gokyo](https://doi.org/10.4025/jphyseduc.v27i1.2756), Journal of Physical Education 27, e2756,
+  CC BY 4.0. Estão em `data/fases/tagusari_2016.yaml`, e a resposta as mostra em três passos.
+- **Libera:** mais técnicas de nage-waza em três passos, no mesmo formato. O katame-waza não
+  segue essa sequência. Com a maior parte das técnicas coberta, a abertura de Técnicas em
+  `src/judo_chat/static/index.html` pode voltar a citar as três fases.
+- **Desde:** 2026-10-28.
+
 ## Confirmadas
 
 ### Vídeos do Kodokan
