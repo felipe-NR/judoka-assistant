@@ -97,6 +97,11 @@ def guardrail_content(
     return content
 
 
+def log_usage(model: str, cache_read: int, input_tokens: int, output_tokens: int) -> None:
+    """Tokens de cada classificação, para medir o custo do guardrail (PR #26)."""
+    logger.info("guardrail: model=%s cache_read=%d input=%d output=%d", model, cache_read, input_tokens, output_tokens)
+
+
 def _closed(kind: str) -> GuardrailResult:
     return GuardrailResult(category="fora", reason=f"guardrail_error:{kind}", failed=True)
 
@@ -134,6 +139,8 @@ class Guardrail:
             logger.exception("guardrail: erro inesperado")
             return _closed("unexpected")
 
+        usage = response.usage
+        log_usage(response.model, usage.cache_read_input_tokens or 0, usage.input_tokens, usage.output_tokens)
         if response.stop_reason == "refusal":
             category = response.stop_details.category if response.stop_details else None
             logger.warning("guardrail: recusa do modelo: categoria=%s", category)
