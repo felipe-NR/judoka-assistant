@@ -1,17 +1,13 @@
 # Roadmap
 
 Trabalho identificado e ainda não feito. Cada item vira um PR próprio. Os itens abaixo
-surgiram em 2026-10-23, no redesenho da página de chat (PR #12), menos a tônica da pronúncia,
-que ficou de fora quando a pronúncia entrou, em 2026-10-28.
+surgiram em 2026-10-23, no redesenho da página de chat (PR #12).
+
+Só entra aqui o que não depende de validação externa. O trabalho que espera a confirmação de
+uma fonte de fora fica em [`validacoes-externas.md`](validacoes-externas.md) e vem para cá
+quando a confirmação chega.
 
 ## Página e API
-
-### Tônica na pronúncia
-
-A pronúncia de `video_groups[]` (`src/judo_chat/pronunciation.py`) segue as regras de letras
-da FGJ, mas não marca a sílaba tônica: sai "SSEOI NAGUE", e as propostas de design mostravam
-"SSEÔI NAGUE". A tabela da FGJ acentua os exemplos (TCHIKAMÁ, UÁZA) sem dizer a regra, então a
-tônica precisa de outra fonte ou de uma lista revisada por técnica.
 
 ### Filtro de assunto que restringe a resposta
 
