@@ -22,29 +22,13 @@ Shippori Mincho B1 e Atkinson Hyperlegible vêm do Google Fonts, então cada vis
 requisições a um terceiro. Servir os arquivos junto com a página (`src/judo_chat/static/`)
 tira essa dependência.
 
-### Tema escuro
-
-A página anterior seguia `prefers-color-scheme: dark`. A atual tem paleta fixa (tatame,
-judogi branco e azul) e precisa de uma versão escura própria.
-
 ## GitHub Actions
 
-Avisos que aparecem nas annotations dos runs do `deploy.yml` (run 40030107154) e do
-`pages.yml` (run 40027259894), em 2026-10-23.
-
-### Actions que ainda rodam em Node.js 20
-
-O GitHub já força essas actions a rodar em Node.js 24 e avisa que o Node.js 20 está
-descontinuado
-([changelog](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)).
-Subir cada uma para a versão que declara Node.js 24:
-
-- `deploy.yml`: `actions/checkout@v4`, `astral-sh/setup-uv@v6`.
-- `pages.yml`: `actions/checkout@v4`, `actions/configure-pages@v5`, `actions/deploy-pages@v4`
-  e `actions/upload-artifact@v4`, que vem de dentro do `actions/upload-pages-artifact@v3`.
-
-### `ubuntu-latest` passa a ser Ubuntu 26
+### Runners no Ubuntu 26
 
 Desde 2026-10-19 o rótulo `ubuntu-latest` está migrando para o Ubuntu 26
-([runner-images#14748](https://github.com/actions/runner-images/issues/14748)). Os dois
-workflows usam esse rótulo. Testar os jobs no Ubuntu 26 ou fixar `ubuntu-24.04` até testar.
+([runner-images#14748](https://github.com/actions/runner-images/issues/14748)), e os dois
+workflows fixam `ubuntu-24.04` desde 2026-10-28. Eles só rodam no push no `main`, então testar
+no Ubuntu 26 direto neles seria fazer deploy a partir dele. O job `test` pode ser testado antes
+num branch, com `ubuntu-26.04` e um gatilho de `pull_request`; os jobs que fazem deploy só
+trocam depois disso.
