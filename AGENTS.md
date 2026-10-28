@@ -28,5 +28,5 @@ secrets) atualiza o README e este arquivo no mesmo PR. Isso inclui trocar o runn
 
 Os diagramas de `docs/arquitetura/` mostram o prompt e o corte do cache, o caminho de uma
 pergunta, a carga do corpus e onde a API roda. Mudança que altere algum desses pontos atualiza
-os diagramas no mesmo PR: edite `scripts/diagramas_arquitetura.py` e rode
-`uv run python scripts/diagramas_arquitetura.py docs/arquitetura`.
+os diagramas no mesmo PR: edite `scripts/diagramas_arquitetura.py`, gere os HTML de novo e
+exporte os PNG, como descreve `docs/arquitetura/README.md`.
