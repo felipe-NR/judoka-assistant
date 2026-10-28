@@ -183,6 +183,10 @@ Detalhes que não passam pelo modelo:
 - **Vídeos:** depois da resposta, o reconhecedor acha as técnicas apresentadas (títulos e
   itens) e a API devolve os vídeos em `video_groups`, com o do Kodokan primeiro. A página os
   põe embaixo da seção de cada técnica.
+- **Kanji e pronúncia:** cada grupo de `video_groups` traz o kanji da ficha da FGJ e a
+  pronúncia gerada por `pronunciation.py` com as regras de `data/fgj/pronuncia.yaml`, sem
+  marcar a tônica. A página mostra a pronúncia acima dos vídeos; o kanji vai numa coluna ao
+  lado quando a resposta apresenta uma técnica, e junto dos vídeos de cada uma quando são várias.
 - **Relações:** `relations.py` liga contragolpes, variações e combinações a partir dos textos
   da FGJ, dos nomes ("X-gaeshi", "Kuzure-X") e das séries do Projeto Budô. Perguntas sobre
   contragolpes, variações ou combinações levam as fichas das técnicas relacionadas.

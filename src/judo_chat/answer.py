@@ -14,6 +14,7 @@ from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus, Document, Technique
 from judo_chat.corpus.render import render_corpus
 from judo_chat.normalizer import Match, Recognizer
+from judo_chat.pronunciation import pronounce
 from judo_chat.relations import Kind as RelationKind
 from judo_chat.relations import Relation, Relations
 
@@ -287,6 +288,8 @@ class VideoGroup:
     videos: tuple[TechniqueVideo, ...]
     # Da ficha da FGJ; a página mostra o kanji ao lado da resposta. None sem ficha.
     kanji: str | None = None
+    # Pelas regras de pronúncia da FGJ, a partir do nome da ficha. None sem ficha.
+    pronunciation: str | None = None
 
 
 _HEADLINE = re.compile(r"^\s*(#{1,6}\s|[-*]\s|\d+[.)]\s|\*\*)")
@@ -333,7 +336,8 @@ def video_groups(
             continue
         videos = tuple(TechniqueVideo(v.url, v.source == "kodokan") for v in technique.videos)
         kanji = technique.fgj.kanji if technique.fgj else None
-        groups.append(VideoGroup(technique_id, technique.name, anchored.get(technique_id), videos, kanji))
+        spoken = pronounce(technique.fgj.tecnica) if technique.fgj else None
+        groups.append(VideoGroup(technique_id, technique.name, anchored.get(technique_id), videos, kanji, spoken))
     return groups
 
 

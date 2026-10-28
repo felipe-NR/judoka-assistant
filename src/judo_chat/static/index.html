@@ -68,12 +68,23 @@
   .msg.bot a { color: var(--blue); }
 
   .video-inline, .videos { display: grid; gap: 6px; margin: 8px 0 12px; }
+  /* Pronúncia e, quando a resposta apresenta várias técnicas, o kanji de cada uma, junto dos vídeos dela. */
+  .technique-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0; }
+  .technique-meta .kanji-inline { font: 800 1.5rem/1 "Shippori Mincho B1", serif; letter-spacing: .04em; color: var(--blue); }
+  .say { font-size: .9rem; color: var(--muted); }
+  .say b { color: var(--blue); letter-spacing: .04em; }
   .videos strong { font: 800 1.05rem "Shippori Mincho B1", serif; }
   .msg.bot a.video { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; border-radius: 8px;
        border: 2px solid var(--blue); color: var(--blue); text-decoration: none; font-weight: 700; line-height: 1.3; }
   .msg.bot a.video.kodokan { background: var(--blue); color: var(--white); }
   .video svg { flex: 0 0 auto; }
   .tags { grid-column: 1 / -1; margin-top: 4px; font-size: .82rem; color: var(--muted); }
+
+  /* Folha no lugar da resposta enquanto o guardrail e o modelo respondem (alguns segundos). */
+  .msg.waiting { color: var(--muted); font-style: italic; }
+  .msg.waiting::after { content: ""; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.2s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+  @media (prefers-reduced-motion: reduce) { .msg.waiting::after { content: "…"; animation: none; } }
 
   /* Recusa e erro: o "matte" do árbitro, com o círculo vermelho. */
   .msg.refused { display: flex; gap: 14px; align-items: center; padding: 24px 16px 14px; border-radius: 8px;
@@ -190,9 +201,35 @@
     return a;
   }
 
+  // Linha com o kanji e a pronúncia acima dos vídeos da técnica. Fica vazia (null) quando
+  // não há o que mostrar.
+  function techniqueMeta(group, showKanji) {
+    const kanji = showKanji && group.kanji;
+    if (!kanji && !group.pronunciation) return null;
+    const meta = document.createElement("p");
+    meta.className = "technique-meta";
+    if (kanji) {
+      const span = document.createElement("span");
+      span.className = "kanji-inline"; span.lang = "ja"; span.setAttribute("aria-hidden", "true");
+      span.textContent = kanji;
+      meta.appendChild(span);
+    }
+    if (group.pronunciation) {
+      const say = document.createElement("span");
+      say.className = "say";
+      say.append("Fala-se ");
+      const b = document.createElement("b");
+      b.textContent = group.pronunciation;
+      say.appendChild(b);
+      meta.appendChild(say);
+    }
+    return meta;
+  }
+
   // Põe os vídeos de cada técnica logo abaixo do título ou item onde ela é apresentada; os
-  // grupos sem lugar na resposta vão para o bloco "Vídeos" no fim.
-  function placeVideos(body, groups) {
+  // grupos sem lugar na resposta vão para o bloco "Vídeos" no fim. Com showKanji, o kanji
+  // de cada técnica vai junto dos vídeos dela.
+  function placeVideos(body, groups, showKanji) {
     const leftovers = [];
     const candidates = Array.from(body.querySelectorAll("h3, li, p"));
     for (const group of groups || []) {
@@ -201,6 +238,8 @@
       if (!target) { leftovers.push(group); continue; }
       const box = document.createElement("div");
       box.className = "video-inline";
+      const meta = techniqueMeta(group, showKanji);
+      if (meta) box.appendChild(meta);
       for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
       if (target.tagName === "LI") target.appendChild(box); else target.after(box);
     }
@@ -225,12 +264,13 @@
   }
 
   // O kanji vai na coluna ao lado só quando a resposta apresenta uma técnica: com várias,
-  // a coluna não diria de qual delas é.
+  // a coluna não diria de qual delas é, e cada kanji vai junto dos vídeos da sua técnica.
   function addAnswer(text, tags, groups) {
     const div = document.createElement("article");
     div.className = "msg bot";
     const anchored = (groups || []).filter((g) => g.anchor);
-    if (anchored.length === 1 && anchored[0].kanji) {
+    const single = anchored.length === 1;
+    if (single && anchored[0].kanji) {
       const kanji = document.createElement("div");
       kanji.className = "kanji"; kanji.lang = "ja"; kanji.setAttribute("aria-hidden", "true");
       kanji.textContent = anchored[0].kanji;
@@ -240,7 +280,7 @@
     const body = document.createElement("div");
     body.className = "body";
     body.innerHTML = renderMarkdown(text);
-    placeVideos(body, groups);
+    placeVideos(body, groups, !single);
     div.appendChild(body);
     if (tags) {
       const small = document.createElement("div");
@@ -250,6 +290,16 @@
     }
     log.appendChild(div);
     div.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function addWaiting() {
+    const div = document.createElement("div");
+    div.className = "msg bot waiting";
+    div.setAttribute("role", "status");
+    div.textContent = "Respondendo";
+    log.appendChild(div);
+    div.scrollIntoView({ behavior: "smooth", block: "end" });
+    return div;
   }
 
   function addStop(title, text) {
@@ -323,12 +373,16 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const query = input.value.trim();
-    if (!query) return;
+    // O Enter chama requestSubmit(), que dispara mesmo com o botão desabilitado: sem isto,
+    // uma segunda pergunta saía enquanto a primeira ainda esperava resposta.
+    if (!query || button.disabled) return;
     const intro = log.querySelector(".intro");
     if (intro) intro.remove();
     addUser(query);
     input.value = "";
+    fitInput();
     button.disabled = true;
+    const waiting = addWaiting();
     try {
       const response = await fetch(API_URL + "/api/perguntar", {
         method: "POST",
@@ -336,6 +390,7 @@
         body: JSON.stringify({ query, history }),
       });
       const data = await response.json();
+      waiting.remove();
       if (!response.ok) {
         addStop("Sem resposta", data.detail || "Erro ao responder.");
         return;
@@ -352,6 +407,7 @@
         { role: "assistente", text: data.answer.slice(0, MAX_TURN_CHARS) },
       ]).slice(-MAX_TURNS);
     } catch (error) {
+      waiting.remove();
       addStop("Sem resposta", "Não foi possível falar com o servidor. Ele pode estar desligado.");
     } finally {
       button.disabled = false;
@@ -372,6 +428,13 @@
     window.visualViewport.addEventListener("scroll", fitViewport);
     fitViewport();
   }
+
+  // O campo cresce com o texto até o max-height do CSS; daí em diante rola por dentro.
+  function fitInput() {
+    input.style.height = "auto";
+    input.style.height = input.scrollHeight + "px";
+  }
+  input.addEventListener("input", fitInput);
 
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {

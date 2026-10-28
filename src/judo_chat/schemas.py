@@ -43,6 +43,8 @@ class VideoGroupOut(BaseModel):
     videos: list[VideoLink]
     # Kanji da ficha da FGJ, para a página mostrar ao lado da resposta (2026-10-23).
     kanji: str | None = None
+    # Pronúncia pelas regras da FGJ ("SSEOI NAGUE"), sem marcar a tônica (2026-10-28).
+    pronunciation: str | None = None
 
 
 class AskResponse(BaseModel):
