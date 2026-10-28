@@ -1,10 +1,11 @@
 # Judô Chat
 
 Assistente que responde em português do Brasil a perguntas sobre técnicas, história e
-regras do judô, e recusa qualquer outro assunto. Implementa a proposta A de
-[`docs/propostas.md`](docs/propostas.md): o corpus inteiro vai no contexto do modelo, com
-cache de prompt, depois de um guardrail de escopo que falha fechado.
-Os diagramas da arquitetura estão em [`docs/arquitetura/`](docs/arquitetura/README.md).
+regras do judô, e recusa qualquer outro assunto. O corpus inteiro vai no contexto do modelo,
+com cache de prompt, depois de um guardrail de escopo que falha fechado. A arquitetura, com
+diagramas, está em [`docs/arquitetura/`](docs/arquitetura/README.md); a decisão de manter
+esse desenho está em [`docs/decisoes/0001-manter-cag.md`](docs/decisoes/0001-manter-cag.md), e
+as alternativas avaliadas, em [`docs/historico/`](docs/historico/propostas-iniciais.md).
 
 ## Rodar
 
