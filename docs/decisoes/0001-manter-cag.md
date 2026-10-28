@@ -25,8 +25,7 @@ Manter o CAG enquanto as três condições valerem:
    resultados foram 0, 100% e 0%.
 3. **Custo:** a pergunta com cache quente continua barata. Na OpenAI, que é a produção, ela
    custa ~US$ 0,0004 e a gravação do prefixo ~US$ 0,007 (medido em 2026-10-28); na Anthropic,
-   ~US$ 0,001 por pergunta. As faixas estão no README, seções "Custo com OpenAI" e "Custo com
-   Anthropic".
+   ~US$ 0,001 por pergunta. As faixas estão em [`../operacao/custos.md`](../operacao/custos.md).
 
 ## Quando uma condição falhar
 

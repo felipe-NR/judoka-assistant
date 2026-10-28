@@ -94,6 +94,16 @@ Erro da API, timeout, resposta fora do schema, `stop_reason` diferente de `end_t
 resposta vazia bloqueiam a resposta. Quando o bloqueio vem de falha, a mensagem é de
 indisponibilidade, e não de fora do escopo.
 
+Com a Decisions API, na avaliação de 2026-10-14, a latência
+mediana caiu de ~4 s para ~0,4 s. Como o modelo não raciocina nem vê o corpus, ele recusava
+termos de arbitragem que a pergunta não liga ao judô (as 4 falsas recusas daquela avaliação).
+Por isso o reconhecedor também acha os termos de `data/glossario/termos_regras.yaml` e os
+envia ao guardrail em `<termos_reconhecidos>`, cada um com o título do documento que o
+explica; só o nome do termo não bastou. Como uma injeção que cita um termo podia passar como
+`regras`, entrou a pergunta sobre mudar as instruções. Na avaliação de 2026-10-23, a falsa
+recusa caiu de 3,1% para 0%, com recusa correta de 100% e nenhum falso aceite adversarial.
+Os limites estão em [`../configuracao.md`](../configuracao.md).
+
 ### Prompt e cache
 
 O bloco de system (instruções e corpus) tem 90,8 mil caracteres: 124 entradas de glossário (104
@@ -118,6 +128,21 @@ variadas, nomes populares e ambíguos, conceitos, regras, história, misto) e 35
 gerais e 10 adversariais). O reconhecedor roda contra todas sem rede, no CI. Guardrail e
 resposta rodam com `pytest -m eval`, com as metas de falso-aceite adversarial igual a 0,
 recusa correta de 95% ou mais e falsa recusa de 5% ou menos.
+
+### O que não passa pelo modelo
+
+- **Vídeos:** depois da resposta, o reconhecedor acha as técnicas apresentadas (títulos e
+  itens) e a API devolve os vídeos em `video_groups`, com o do Kodokan primeiro. A página os
+  põe embaixo da seção de cada técnica.
+- **Kanji e pronúncia:** cada grupo de `video_groups` traz o kanji da ficha da FGJ e a
+  pronúncia gerada por `pronunciation.py` com as regras de `data/fgj/pronuncia.yaml`, sem
+  marcar a tônica. A página mostra a pronúncia acima dos vídeos; o kanji vai numa coluna ao
+  lado quando a resposta apresenta uma técnica, e junto dos vídeos de cada uma quando são várias.
+- **Relações:** `relations.py` liga contragolpes, variações e combinações a partir dos textos
+  da FGJ, dos nomes ("X-gaeshi", "Kuzure-X") e das séries do Projeto Budô. Perguntas sobre
+  contragolpes, variações ou combinações levam as fichas das técnicas relacionadas.
+- **Conversa:** a página envia as últimas 3 trocas em `history`; o servidor não guarda
+  estado. O histórico vai ao modelo como dado, depois do trecho cacheado.
 
 ## Atualizar
 

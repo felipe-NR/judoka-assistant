@@ -13,16 +13,16 @@ pergunta gasta crédito do provedor. Toda rota nova que chame um provedor passa 
 limit (`src/judo_chat/question_rate_limit.py`) e tem timeout. Configuração nova entra em
 `Settings` (`src/judo_chat/config.py`); comentários explicam o porquê, com data ou PR.
 
-O deploy da API é automático: cada push no `main` que mexe no backend passa pelos testes e
-é instalado na VM pelo `.github/workflows/deploy.yml`, que chama
-`/usr/local/sbin/judoka-deploy <commit>` (`deploy/judoka-deploy`) por SSH dentro da tailnet.
-Merge no `main` é deploy em produção. O `deploy/install.sh` também baixa a base de países
-do bloqueio por país (`scripts/update_geoip.py`). A página sai pelo `pages.yml`. A configuração da VM, da
-tailnet e dos secrets está no README, seção "Deploy automático".
+O deploy da API é automático: cada push no `main` que mexe no backend passa pelos testes e é
+instalado na VM pelo `.github/workflows/deploy.yml`, que chama `/usr/local/sbin/judoka-deploy
+<commit>` (`deploy/judoka-deploy`) por SSH dentro da tailnet. Merge no `main` é deploy em
+produção. O `deploy/install.sh` também baixa a base de países do bloqueio por país
+(`scripts/update_geoip.py`). A página sai pelo `pages.yml`. A configuração da VM, da tailnet e
+dos secrets está em `docs/operacao/deploy.md`, seção "Deploy automático".
 
 Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos
-secrets) atualiza o README e este arquivo no mesmo PR. Isso inclui trocar o runner, fixo em
-`ubuntu-24.04`, ou a versão de uma action.
+secrets) atualiza o `docs/operacao/deploy.md` e este arquivo no mesmo PR. Isso inclui trocar o
+runner, fixo em `ubuntu-24.04`, ou a versão de uma action.
 
 ## Arquitetura
 
