@@ -63,6 +63,15 @@ class FgjTerm(_Frozen):
     conceito: str | None = None
 
 
+class Phases(_Frozen):
+    """Kuzushi, tsukuri e kake de Tagusari, Santos e Tani (2016), CC BY 4.0, sem os números dos
+    componentes. A fonte e as alterações estão no cabeçalho de data/fases/tagusari_2016.yaml."""
+
+    kuzushi: str
+    tsukuri: str
+    kake: str
+
+
 class JudobaseRef(_Frozen):
     code_short: str
     id_tag: str
@@ -89,6 +98,8 @@ class Technique(_Frozen):
     fgj: FgjTechnique | None = None
     # Para categorias, conceitos e pegadas: o verbete do glossário da FGJ, quando existe.
     fgj_term: FgjTerm | None = None
+    # Só as seis te-waza do gokyo; nenhuma outra fonte aberta separa as fases por técnica.
+    phases: Phases | None = None
 
     _provenance = field_validator("provenance")(_check_provenance)
 

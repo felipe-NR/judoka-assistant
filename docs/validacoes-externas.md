@@ -64,14 +64,9 @@ que ela libera vira um item do roadmap.
 
 ### Kuzushi, tsukuri e kake por técnica
 
-- **Falta:** uma fonte que descreva as três fases de cada técnica de projeção. Nenhuma ficha de
-  `data/curadoria/nage_waza.yaml` ou de `data/fgj/tecnicas.yaml` separa as fases, e o prompt
-  não deixa o modelo dividir a descrição da FGJ por conta própria. Fontes candidatas, levantadas
-  na web em 2026-10-28:
-  - Tagusari, Santos e Tani (2016), [Analysis of the complexity of te waza techniques of judo
-    belonging to Gokyo](https://doi.org/10.4025/jphyseduc.v27i1.2756), Journal of Physical
-    Education 27, e2756 (SciELO, CC BY 4.0): componentes de cada fase de seis te-waza
-    (Seoi-nage, Tai-otoshi, Kata-guruma, Sukui-nage, Uki-otoshi e Sumi-otoshi).
+- **Falta:** uma fonte que descreva as três fases das outras técnicas de projeção. A FGJ não
+  separa as fases, e o prompt não deixa o modelo dividir a descrição dela por conta própria.
+  Fontes candidatas, levantadas na web em 2026-10-28:
   - Gomes et al. (2009), [Golpe de judô o soto gari: validação de lista de
     checagem](https://portalrevistas.ucb.br/index.php/RBCM/article/download/1032/1442), Revista
     Brasileira de Ciência e Movimento 17(4): o kuzushi do Osoto-gari separado, o tsukuri e o kake
@@ -83,9 +78,14 @@ que ela libera vira um item do roadmap.
     (Hiza-guruma, por exemplo) com a direção do kuzushi e o tai-sabaki, sem as três fases
     nomeadas.
   - O site do Kodokan não tem página por técnica, só a lista com os vídeos.
-- **Libera:** campos `kuzushi`, `tsukuri` e `kake` nas fichas de nage-waza e a resposta em três
-  passos quando a ficha os tiver. O katame-waza não segue essa sequência. Com os campos, a
-  abertura de Técnicas em `src/judo_chat/static/index.html` pode voltar a citar as três fases.
+- **Confirmado:** em 2026-10-28, as seis te-waza do gokyo (Seoi-nage, Tai-otoshi, Kata-guruma,
+  Sukui-nage, Uki-otoshi e Sumi-otoshi), com o texto em português de Tagusari, Santos e Tani
+  (2016), [Análise da complexidade das técnicas de te waza do judô pertencentes ao
+  gokyo](https://doi.org/10.4025/jphyseduc.v27i1.2756), Journal of Physical Education 27, e2756,
+  CC BY 4.0. Estão em `data/fases/tagusari_2016.yaml`, e a resposta as mostra em três passos.
+- **Libera:** mais técnicas de nage-waza em três passos, no mesmo formato. O katame-waza não
+  segue essa sequência. Com a maior parte das técnicas coberta, a abertura de Técnicas em
+  `src/judo_chat/static/index.html` pode voltar a citar as três fases.
 - **Desde:** 2026-10-28.
 
 ## Confirmadas

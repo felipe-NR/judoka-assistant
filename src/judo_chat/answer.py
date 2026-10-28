@@ -58,6 +58,10 @@ Descrição das técnicas (fonte primária: Curso de Waza da Federação Gaúcha
 - Todo texto copiado da FGJ sai com o rótulo da fonte, em cada técnica da resposta:
   **Descrição Kodokan (FGJ):** "..." e **Princípio (FGJ):** "...". Quando a técnica não tem
   texto da FGJ, não cite fonte.
+- Quando a técnica tiver as linhas Kuzushi, Tsukuri e Kake (Tagusari 2016), apresente as
+  três fases depois da descrição da FGJ, uma por item, sem alterar o texto, com o rótulo
+  **Kuzushi, tsukuri e kake (Tagusari, Santos e Tani, 2016):** e o aviso de que o artigo
+  descreve a forma do kata. Sem essas linhas, não divida a técnica em fases.
 - Quando a pergunta pedir contragolpes, variações ou combinações, use as "Relações da
   base" anexadas: apresente cada técnica relacionada num título ou item próprio, com a
   ficha dela e a fonte da relação (FGJ, nome da técnica ou série do Projeto Budô).
@@ -204,6 +208,12 @@ def _sheet(technique: Technique) -> str | None:
             lines.append(f'Conceito (FGJ): "{technique.fgj_term.conceito}"')
     elif technique.description_pt_br:
         lines.append(f"Descrição (redigida para esta base, não é da FGJ): {technique.description_pt_br}")
+    if phases := technique.phases:
+        lines += [
+            f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"',
+            f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"',
+            f'Kake (Tagusari 2016): "{phases.kake}"',
+        ]
     return "\n".join(lines) if len(lines) > 1 else None
 
 

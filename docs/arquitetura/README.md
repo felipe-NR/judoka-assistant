@@ -110,9 +110,10 @@ Os limites estão em [`../configuracao.md`](../configuracao.md).
 
 ### Prompt e cache
 
-O bloco de system (instruções e corpus) tem 90,8 mil caracteres: 124 entradas de glossário (104
-técnicas), 41 nomes populares, 4 textos de regras, 3 de história, 11 de graduação e 2 de termos
-da FGJ. São cerca de 28 mil tokens no gpt-6-luna, o modelo da produção (log de 2026-10-23), e
+O bloco de system (instruções e corpus) tem 95,1 mil caracteres (2026-10-28): 124 entradas de
+glossário (104 técnicas, 6 delas com kuzushi, tsukuri e kake), 41 nomes populares, 4 textos de
+regras, 3 de história, 11 de graduação e 2 de termos da FGJ. Com 90,8 mil caracteres, antes das
+fases, eram cerca de 28 mil tokens no gpt-6-luna, o modelo da produção (log de 2026-10-23), e
 46 mil no Haiku 5.5 (2026-10-07).
 
 O bloco é montado uma vez no startup e serializado de forma determinística (ordenado, sem set
