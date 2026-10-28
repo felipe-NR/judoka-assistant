@@ -188,6 +188,7 @@ def prompt_layers():
     b = []
     # Direção (margem esquerda)
     b.append(text(24, 76, "ORDEM NO PROMPT", 8, MUTED, MONO, spacing="0.18em"))
+    b.append(text(x0, 76, "PROMPT DO MODELO DE RESPOSTA · RESPONSES API", 8, INK, MONO, spacing="0.18em", weight=600))
     b.append(f'<line x1="72" y1="88" x2="72" y2="400" stroke="{ink(0.30)}" stroke-width="1"/>')
     b.append(f'<polygon points="68,400 76,400 72,408" fill="{MUTED}"/>')
     # Camadas
@@ -248,15 +249,24 @@ def prompt_layers():
             italic=True,
         )
     )
+    b.append(text(x0, 536, "E O GUARDRAIL", 8, MUTED, MONO, spacing="0.18em"))
+    for gy, line in (
+        (560, "O guardrail não lê este prompt. Pela Decisions API ele recebe as próprias instruções,"),
+        (580, "o histórico, a pergunta e as técnicas reconhecidas, sem o corpus, e devolve probabilidades."),
+    ):
+        b.append(text(x0, gy, line, 14, INK, SERIF, italic=True))
     return page(
         "prompt-cag",
         "Layer stack · Arquitetura CAG",
         "Anatomia do prompt",
         "Anatomia do prompt do judoka-assistant",
-        "Pilha das cinco partes do prompt de resposta: instruções e corpus inteiro no prefixo cacheado, e depois do corte do cache o histórico, a pergunta e os anexos do reconhecedor.",
+        "Pilha das cinco partes do prompt do modelo de resposta: instruções e corpus inteiro no prefixo cacheado, e depois do corte do cache o histórico, a pergunta e os anexos do reconhecedor. O guardrail recebe outro prompt, sem o corpus.",
         960,
-        520,
+        604,
         "\n".join(b),
+        "Este é o prompt do modelo de resposta, que gera o texto; na OpenAI ele vai pela Responses API. O guardrail é outra chamada, "
+        "um classificador pela Decisions API que não gera texto. Na Anthropic, as duas chamadas usam a Messages API, e o guardrail "
+        "devolve a categoria por saída estruturada. "
         "O prefixo (instruções e corpus) é montado por <code>build_system_text</code> na partida da API e não muda entre perguntas. "
         "Na OpenAI, que é a produção, ele fica no cache por 12 horas (<code>prompt_cache_options.ttl</code>); na Anthropic, por 1 hora com "
         "re-aquecimento (<code>keepalive.py</code>). As camadas 03 a 05 são a mensagem do usuário, montada por <code>build_user_message</code>. "
@@ -328,8 +338,8 @@ def question_sequence():
     b += [
         node(P - 80, 72, 160, 56, "WEB", "Página", "GitHub Pages", "input"),
         node(A - 80, 72, 160, 56, "API", "API", "FastAPI · VM", "backend"),
-        node(G - 80, 72, 160, 56, "LLM", "Guardrail", "1ª chamada", "external"),
-        node(M - 80, 72, 160, 56, "LLM", "Modelo de resposta", "2ª chamada · cache", "focal"),
+        node(G - 80, 72, 160, 56, "CLASSIF", "Guardrail", "Decisions API", "external"),
+        node(M - 80, 72, 160, 56, "LLM", "Modelo de resposta", "Responses API · cache", "focal"),
     ]
     # Legenda
     b.append(f'<line x1="56" y1="664" x2="944" y2="664" stroke="{ink(0.10)}" stroke-width="0.8"/>')
@@ -361,7 +371,9 @@ def question_sequence():
         1000,
         724,
         "\n".join(b),
-        "Só o guardrail e o modelo de resposta chamam um provedor. Antes deles, o bloqueio por país responde 403 e o rate limit responde 429, "
+        "Só o guardrail e o modelo de resposta chamam um provedor. Na produção (OpenAI), o guardrail é um classificador pela Decisions API, "
+        "que devolve probabilidades em vez de texto, e o modelo de resposta gera o texto pela Responses API, com o prefixo no cache. "
+        "Na Anthropic, as duas chamadas usam a Messages API. Antes delas, o bloqueio por país responde 403 e o rate limit responde 429, "
         "sem gastar crédito. Se o guardrail falhar, a página recebe a mensagem de indisponibilidade pelo mesmo ramo da recusa. "
         "Vídeos, kanji e pronúncia saem dos dados (<code>video_groups</code>), sem modelo.",
     )
@@ -404,7 +416,7 @@ def corpus_flow():
         (2, 3, "load_corpus", "YAML → Corpus", "+ reconhecedor", "DB", "TB", False),
         (2, 4, "Prefixo", "instruções + corpus", "render_corpus", "TB", "FL", False),
         (3, 3, "Reconhecedor", "técnicas · termos", "fichas e relações", "TB", "FL", False),
-        (3, 4, "Chamada ao modelo", "prefixo + anexos", "OpenAI · Anthropic", "FL", None, True),
+        (3, 4, "Chamada ao modelo", "prefixo + anexos", "Responses API", "FL", None, True),
     ]
     b = [
         '<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">'
@@ -589,7 +601,7 @@ def production_deployment():
         )
 
     b.append(node(48, 104, 192, 64, "USER", "Navegador", "visitante", "input"))
-    b.append(node(48, 472, 192, 64, "EXT", "Provedores de LLM", "OpenAI · Anthropic", "external"))
+    b.append(node(48, 472, 192, 64, "EXT", "OpenAI", "Decisions + Responses", "external"))
     b.append(node(336, 104, 200, 96, "CDN", "GitHub Pages", None, "backend", name_y=144))
     b.append(chip(352, 160, 168, "index.html", "pages.yml"))
     b.append(node(736, 104, 200, 96, "CI", "GitHub Actions", None, "backend", name_y=144))
@@ -631,14 +643,15 @@ def production_deployment():
         "Deployment · Arquitetura CAG",
         "Onde roda",
         "Onde o judoka-assistant roda",
-        "Implantação em três zonas: o navegador na internet pública busca a página no GitHub Pages e pergunta pela única entrada pública, o Tailscale Funnel, que entrega à API na VM; o GitHub Actions faz deploy pela tailnet via SSH, e não há porta aberta direto na VM.",
+        "Implantação em três zonas: o navegador na internet pública busca a página no GitHub Pages e pergunta pela entrada pública da API, o Tailscale Funnel, que entrega à API na VM; o GitHub Actions faz deploy pela tailnet via SSH, e não há porta aberta direto na VM.",
         1000,
         640,
         "\n".join(b),
         "A VM não abre porta na OCI: o tráfego público entra pelo Funnel, que dá HTTPS e entrega a "
         "<code>127.0.0.1:8010</code>; ali o bloqueio por país e o rate limit agem antes de qualquer chamada a provedor. O GitHub Actions entra na "
         "tailnet como nó efêmero com <code>tag:ci</code> e a chave dele só roda <code>judoka-deploy &lt;commit&gt;</code>, que recusa commit fora do "
-        '<code>main</code>. Detalhes no README, seção "Deploy automático".',
+        "<code>main</code>. A API chama a OpenAI pela Decisions API (guardrail) e pela Responses API (resposta); com "
+        '<code>JUDO_CHAT_PROVIDER=anthropic</code>, as duas chamadas vão à Messages API. Detalhes no README, seção "Deploy automático".',
     )
 
 

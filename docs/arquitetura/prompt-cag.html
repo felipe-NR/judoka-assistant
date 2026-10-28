@@ -60,9 +60,9 @@
     <p class="eyebrow">Layer stack · Arquitetura CAG</p>
     <h1>Anatomia do prompt</h1>
     <div class="diagram-container">
-      <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="prompt-cag-title prompt-cag-desc">
+      <svg viewBox="0 0 960 604" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="prompt-cag-title prompt-cag-desc">
         <title id="prompt-cag-title">Anatomia do prompt do judoka-assistant</title>
-        <desc id="prompt-cag-desc">Pilha das cinco partes do prompt de resposta: instruções e corpus inteiro no prefixo cacheado, e depois do corte do cache o histórico, a pergunta e os anexos do reconhecedor.</desc>
+        <desc id="prompt-cag-desc">Pilha das cinco partes do prompt do modelo de resposta: instruções e corpus inteiro no prefixo cacheado, e depois do corte do cache o histórico, a pergunta e os anexos do reconhecedor. O guardrail recebe outro prompt, sem o corpus.</desc>
         <defs>
 <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
 <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker>
@@ -70,6 +70,7 @@
         </defs>
         <rect width="100%" height="100%" fill="#f5f5f5"/>
 <text x="24" y="76" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">ORDEM NO PROMPT</text>
+<text x="152" y="76" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" font-weight="600" letter-spacing="0.18em">PROMPT DO MODELO DE RESPOSTA · RESPONSES API</text>
 <line x1="72" y1="88" x2="72" y2="400" stroke="rgba(45,49,66,0.3)" stroke-width="1"/>
 <polygon points="68,400 76,400 72,408" fill="#4f5d75"/>
 <rect x="152" y="88" width="688" height="64" fill="#ffffff"/>
@@ -109,9 +110,12 @@
 <text x="152" y="452" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">POR QUE ASSIM</text>
 <text x="152" y="476" fill="#2d3142" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">O que se repete em toda pergunta fica antes do corte e o provedor relê do cache, a 10% do preço de entrada.</text>
 <text x="152" y="496" fill="#2d3142" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">O prefixo é montado uma vez na partida e sai sempre com os mesmos bytes; o que muda vai depois.</text>
+<text x="152" y="536" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">E O GUARDRAIL</text>
+<text x="152" y="560" fill="#2d3142" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">O guardrail não lê este prompt. Pela Decisions API ele recebe as próprias instruções,</text>
+<text x="152" y="580" fill="#2d3142" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">o histórico, a pergunta e as técnicas reconhecidas, sem o corpus, e devolve probabilidades.</text>
       </svg>
     </div>
-    <p class="note">O prefixo (instruções e corpus) é montado por <code>build_system_text</code> na partida da API e não muda entre perguntas. Na OpenAI, que é a produção, ele fica no cache por 12 horas (<code>prompt_cache_options.ttl</code>); na Anthropic, por 1 hora com re-aquecimento (<code>keepalive.py</code>). As camadas 03 a 05 são a mensagem do usuário, montada por <code>build_user_message</code>. Os ~28 mil tokens do corpus são a medida no gpt-6-luna; no Haiku 5.5 são cerca de 46 mil.</p>
+    <p class="note">Este é o prompt do modelo de resposta, que gera o texto; na OpenAI ele vai pela Responses API. O guardrail é outra chamada, um classificador pela Decisions API que não gera texto. Na Anthropic, as duas chamadas usam a Messages API, e o guardrail devolve a categoria por saída estruturada. O prefixo (instruções e corpus) é montado por <code>build_system_text</code> na partida da API e não muda entre perguntas. Na OpenAI, que é a produção, ele fica no cache por 12 horas (<code>prompt_cache_options.ttl</code>); na Anthropic, por 1 hora com re-aquecimento (<code>keepalive.py</code>). As camadas 03 a 05 são a mensagem do usuário, montada por <code>build_user_message</code>. Os ~28 mil tokens do corpus são a medida no gpt-6-luna; no Haiku 5.5 são cerca de 46 mil.</p>
   </div>
 </body>
 </html>

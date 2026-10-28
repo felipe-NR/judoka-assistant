@@ -1,19 +1,22 @@
 # Arquitetura
 
-Diagramas da arquitetura da proposta A (CAG: o corpus inteiro no contexto, com cache de
-prompt). Cada diagrama tem uma página HTML com SVG embutido, que é a fonte, e um PNG
+Diagramas da arquitetura CAG (o corpus inteiro no contexto, com cache de prompt). Cada
+diagrama tem uma página HTML com SVG embutido, que é a fonte, e um PNG
 exportado dela para aparecer aqui no GitHub.
 
 ## Anatomia do prompt
 
-As partes do prompt de resposta e onde fica o corte do cache. Página:
+As partes do prompt do modelo de resposta e onde fica o corte do cache. O guardrail recebe
+outro prompt, sem o corpus. Página:
 [`prompt-cag.html`](prompt-cag.html).
 
 ![Pilha das partes do prompt, com o corte do cache entre o prefixo e a mensagem da pergunta](prompt-cag.png)
 
 ## Uma pergunta, ponta a ponta
 
-Uma pergunta da página até a resposta, com as duas chamadas ao provedor. Página:
+Uma pergunta da página até a resposta, com as duas chamadas ao provedor: o guardrail, um
+classificador pela Decisions API, e o modelo de resposta, que gera o texto pela Responses API.
+Página:
 [`pergunta-sequencia.html`](pergunta-sequencia.html).
 
 ![Sequência de uma pergunta entre página, API, guardrail e modelo de resposta](pergunta-sequencia.png)
