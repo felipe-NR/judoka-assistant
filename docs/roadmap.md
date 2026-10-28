@@ -1,15 +1,17 @@
 # Roadmap
 
 Trabalho identificado e ainda não feito. Cada item vira um PR próprio. Os itens abaixo
-surgiram em 2026-10-23, no redesenho da página de chat (PR #12).
+surgiram em 2026-10-23, no redesenho da página de chat (PR #12), menos a tônica da pronúncia,
+que ficou de fora quando a pronúncia entrou, em 2026-10-28.
 
 ## Página e API
 
-### Pronúncia das técnicas
+### Tônica na pronúncia
 
-As propostas de design mostravam "Fala-se SSEÔI NAGUE" abaixo do nome da técnica. A página
-ainda não mostra porque a API não envia a pronúncia. Gerar a pronúncia a partir das regras
-de `data/fgj/pronuncia.yaml` e enviá-la em `video_groups[]`, como já acontece com o `kanji`.
+A pronúncia de `video_groups[]` (`src/judo_chat/pronunciation.py`) segue as regras de letras
+da FGJ, mas não marca a sílaba tônica: sai "SSEOI NAGUE", e as propostas de design mostravam
+"SSEÔI NAGUE". A tabela da FGJ acentua os exemplos (TCHIKAMÁ, UÁZA) sem dizer a regra, então a
+tônica precisa de outra fonte ou de uma lista revisada por técnica.
 
 ### Filtro de assunto que restringe a resposta
 
@@ -17,12 +19,6 @@ Os botões Técnicas, Regras e História só trocam a pergunta de exemplo, porqu
 `POST /api/perguntar` não recebe o assunto. Para o filtro valer, a API precisa receber o
 assunto, e o guardrail ou o prompt da resposta precisam usá-lo. Qualquer mudança nessa rota
 continua passando pelo rate limit (`src/judo_chat/question_rate_limit.py`).
-
-### Kanji em respostas com várias técnicas
-
-A coluna vertical do kanji só aparece quando a resposta apresenta uma técnica, porque com
-várias ela não diria de qual técnica é o kanji. O kanji de cada técnica poderia ir ao lado do
-título ou item onde ela é apresentada, no mesmo lugar dos vídeos.
 
 ### Fontes servidas pela própria página
 
@@ -34,16 +30,6 @@ tira essa dependência.
 
 A página anterior seguia `prefers-color-scheme: dark`. A atual tem paleta fixa (tatame,
 judogi branco e azul) e precisa de uma versão escura própria.
-
-### Indicador de espera
-
-Enquanto a API responde, só o botão de envio fica desabilitado. O guardrail e a resposta
-somam alguns segundos, então uma folha "respondendo…" no lugar da resposta ajudaria.
-
-### Campo de pergunta que cresce com o texto
-
-O campo tem uma linha e não pode ser redimensionado. Perguntas longas rolam dentro dele.
-Ele deveria crescer com o texto até o limite de altura (`max-height`).
 
 ## GitHub Actions
 
