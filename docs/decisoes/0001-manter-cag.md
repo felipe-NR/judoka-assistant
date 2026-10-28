@@ -23,10 +23,10 @@ Manter o CAG enquanto as três condições valerem:
 2. **Qualidade:** a avaliação (`pytest -m eval`) passa nas metas: falso-aceite adversarial 0,
    recusa correta de 95% ou mais e falsa recusa de 5% ou menos. Na avaliação de 2026-10-23 os
    resultados foram 0, 100% e 0%.
-3. **Custo:** a pergunta com cache quente continua barata. Na Anthropic, a faixa medida está no
-   README (~US$ 0,001 por pergunta). Na OpenAI, que é a produção, a leitura do cache também
-   custa 10% da entrada, mas a faixa por pergunta ainda não foi medida; a medição está no
-   [`../roadmap.md`](../roadmap.md).
+3. **Custo:** a pergunta com cache quente continua barata. Na OpenAI, que é a produção, ela
+   custa ~US$ 0,0004 e a gravação do prefixo ~US$ 0,007 (medido em 2026-10-28); na Anthropic,
+   ~US$ 0,001 por pergunta. As faixas estão no README, seções "Custo com OpenAI" e "Custo com
+   Anthropic".
 
 ## Quando uma condição falhar
 

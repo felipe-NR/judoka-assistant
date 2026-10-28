@@ -155,6 +155,28 @@ Sem a base, a API sobe com o bloqueio desligado e avisa no log. A base é a
    ~28 mil no gpt-6-luna). Na Anthropic, o bloco de system fica cacheado por 1 hora; na
    OpenAI, por 12 horas.
 
+## Custo com OpenAI
+
+Medido em 2026-10-28 nos logs da produção de 2026-10-23 a 2026-10-28 (37 respostas), com a
+tabela do gpt-6-luna para prompts de até 272 mil tokens: US$ 0,10/M de entrada, US$ 0,01/M de
+leitura do cache, US$ 0,25/M de gravação com TTL de 12 horas e US$ 0,50/M de saída
+([preços da OpenAI](https://developers.openai.com/api/docs/pricing)). O prefixo tem 27.611
+tokens; uma resposta tem em mediana 135 tokens de saída.
+
+| Caso | US$ por resposta | Respostas |
+|-|-|-|
+| Cache quente | ~0,0004 (0,0003 a 0,0006) | 31 |
+| Cache frio (grava o prefixo) | ~0,007 | 6 |
+
+O tráfego foi de 1 a 19 perguntas por dia, então as 6 gravações somaram 76% dos US$ 0,055 do
+período. Com o TTL padrão de 30 minutos, a gravação custa metade, mas o mesmo tráfego teria 14
+gravações e sairia cerca de 9% mais caro que o observado. Duas gravações vieram 4,5 e 5,7 horas depois da
+pergunta anterior, dentro das 12 horas pedidas e sem mudança no prefixo.
+
+O guardrail não registra tokens nos logs. A Decisions API cobra só a entrada, sem cache, a
+US$ 0,10/M; com a ordem de grandeza do guardrail na Anthropic (~1.400 tokens), seria cerca de
+US$ 0,00014 por pergunta, uma estimativa e não uma medida.
+
 ## Custo com Anthropic
 
 Calculado em 2026-10-07 com os tokens medidos na avaliação (effort `low`) e a tabela do

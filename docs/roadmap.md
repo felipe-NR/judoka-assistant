@@ -16,13 +16,6 @@ Os botões Técnicas, Regras e História só trocam a pergunta de exemplo, porqu
 assunto, e o guardrail ou o prompt da resposta precisam usá-lo. Qualquer mudança nessa rota
 continua passando pelo rate limit (`src/judo_chat/question_rate_limit.py`).
 
-### Custo por pergunta na OpenAI
-
-A condição de custo de [`decisoes/0001-manter-cag.md`](decisoes/0001-manter-cag.md) só tem a
-faixa medida na Anthropic (~US$ 0,001 por pergunta, no README). Na OpenAI, que é a produção, a
-leitura do cache também custa 10% da entrada, mas a faixa por pergunta ainda não foi medida.
-O primeiro passo é somar `cache_read` e `cache_write` dos logs de um dia com o TTL de 12 horas
-e registrar o resultado no README, ao lado do custo com a Anthropic.
 
 ## GitHub Actions
 
