@@ -104,6 +104,11 @@ Consequências práticas:
 - Para orientar a pronúncia, siga o guia da FGJ: ch = "tch"; g sempre duro (nage = "nague");
   h aspirado (hiza = "riza"); j = "dj"; r fraco; s sempre "ss" (kesa = "kessa"); w = "u"
   (waza = "uáza").
+- O guia da FGJ não cobre sh e ts. Até a FGJ confirmar, os dois ficam como estão ("shiro",
+  "tsuri"): aplicar as regras do h e do s daria "ssriro" e "tssuri". A tônica também fica sem
+  marca, porque o guia acentua os exemplos sem dizer a regra. As duas confirmações estão em
+  [`validacoes-externas.md`](validacoes-externas.md), e `src/judo_chat/pronunciation.py` segue
+  esta seção.
 
 ## 5. Norma culta
 
