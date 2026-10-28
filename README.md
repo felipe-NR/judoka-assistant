@@ -83,6 +83,10 @@ confere a URL pública com um preflight de CORS, que não chama o provedor nem c
 limit. Ele fica fora porque, dentro da tailnet, o nome da VM resolve para o IP da tailnet e
 não para o Funnel. Mudanças só na página continuam saindo pelo `pages.yml`.
 
+Os dois workflows rodam em `ubuntu-24.04`, fixo até os jobs serem testados no Ubuntu 26
+(`docs/roadmap.md`), e as actions estão nas versões que rodam em Node.js 24. O `setup-uv` vai
+com a versão exata (`@v10.3.3`), porque desde a v8 ele não publica tags de major.
+
 O runner entra na tailnet como nó efêmero com a tag `tag:ci` e faz SSH na VM como
 `judoka-deploy`. A chave desse usuário só roda `/usr/local/sbin/judoka-deploy <commit>`, que
 recusa commits fora do `main`. Esse comando roda o `install.sh` a partir de um clone do root,

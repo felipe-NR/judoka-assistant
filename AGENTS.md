@@ -21,4 +21,5 @@ do bloqueio por país (`scripts/update_geoip.py`). A página sai pelo `pages.yml
 tailnet e dos secrets está no README, seção "Deploy automático".
 
 Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos
-secrets) atualiza o README e este arquivo no mesmo PR.
+secrets) atualiza o README e este arquivo no mesmo PR. Isso inclui trocar o runner, fixo em
+`ubuntu-24.04`, ou a versão de uma action.
