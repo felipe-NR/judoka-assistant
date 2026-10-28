@@ -16,12 +16,6 @@ Os botões Técnicas, Regras e História só trocam a pergunta de exemplo, porqu
 assunto, e o guardrail ou o prompt da resposta precisam usá-lo. Qualquer mudança nessa rota
 continua passando pelo rate limit (`src/judo_chat/question_rate_limit.py`).
 
-### Fontes servidas pela própria página
-
-Shippori Mincho B1 e Atkinson Hyperlegible vêm do Google Fonts, então cada visita faz
-requisições a um terceiro. Servir os arquivos junto com a página (`src/judo_chat/static/`)
-tira essa dependência.
-
 ## GitHub Actions
 
 ### Runners no Ubuntu 26
