@@ -109,12 +109,6 @@ Referências da auditoria: "Don't Do RAG" (Chan et al., WWW Companion '25, arXiv
 
 ## Pendências
 
-- **Licença:** pedir ao autor do judo-techniques-bot permissão para usar o CSV (o glossário gerado deriva dele) e verificar os termos de uso do data.ijf.org.
-- **Revisão de conteúdo:** todas as descrições, regras e textos de história estão com `provenance: generated`. Foram conferidos na web, em 2026-10-04, só o retorno do yuko em 2025 e os tempos de imobilização (5, 10 e 20 segundos).
-- **Lista do Kodokan:** confirmada em 2026-10-05 pela lista oficial da FECJU (100 técnicas: 68 nage-waza e 32 katame-waza), que bate com a classificação do corpus em todas. As formas curtas da IJF para as chaves de braço fora da amostra (Ude-gatame, Hiza-gatame, Waki-gatame, Hara-gatame, Ashi-gatame, Te-gatame, Sankaku-gatame) continuam sem confirmação.
-- **Vídeos:** 98 técnicas têm vídeo do canal do Kodokan, listado primeiro. Na FECJU, o link do Osoto-guruma aponta para o vídeo do O-guruma e o do Sasae-tsurikomi-ashi não é vídeo; essas duas ficam só com o vídeo do CSV do bot.
-- **Mecânica revisada:** 18 fichas reescritas e revisadas pela sessão do judo-techniques-bot em 2026-10-05; o Harai-tsurikomi-ashi e o pé exato do Okuriashi-harai ficaram com confiança baixa e devem ser conferidos nos vídeos do Kodokan.
-- **Nomes populares de confiança média ou baixa:** conferir nas fontes autorizadas pelo usuário (sites das federações estaduais, Projeto Budô, @rafaelsilvajudo, @judoparatodosoficial). Reverse seoi-nage, Yagura-nage e Jigoku-jime continuam sem classificação oficial segura.
-- **Vídeo removido:** a linha "Kake" do CSV do bot apontava para um vídeo sem relação com judô (`dQw4w9WgXcQ`).
-
-Os arquivos de evidência das sessões estão em `docs/glossario/`: `judobase_tag_mapping.csv` (96 rótulos da IJF com o casamento com o CSV do bot) e `match_test.py` (teste da regex do bot, roda a partir da raiz do judo-techniques-bot).
+As confirmações que dependem de fontes externas (licença dos dados, revisão do conteúdo, nomes
+da IJF, mecânica, nomes populares, vídeos) estão em
+[`validacoes-externas.md`](validacoes-externas.md).
