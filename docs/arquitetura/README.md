@@ -79,6 +79,10 @@ grafia "nague", e colapsa letras dobradas. No texto livre, o reconhecedor procur
 até 6 palavras, fica com a mais longa e descarta palavras de borda que somem na canonização
 ("é", "ou"). Os casos que a regex do judo-techniques-bot errava estão nos testes.
 
+`normalizer.Recognizer` acha na pergunta o nome oficial, o nome da IJF, as grafias variadas e
+os nomes populares; um nome ambíguo devolve todas as candidatas. Ele acha também os termos de
+regras, arbitragem e graduação de `data/glossario/termos_regras.yaml`, que só vão ao guardrail.
+
 ### Guardrail que falha fechado
 
 O guardrail classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora`. Ele recebe as
