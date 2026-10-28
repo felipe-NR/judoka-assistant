@@ -15,15 +15,3 @@ Os botões Técnicas, Regras e História só trocam a pergunta de exemplo, porqu
 `POST /api/perguntar` não recebe o assunto. Para o filtro valer, a API precisa receber o
 assunto, e o guardrail ou o prompt da resposta precisam usá-lo. Qualquer mudança nessa rota
 continua passando pelo rate limit (`src/judo_chat/question_rate_limit.py`).
-
-
-## GitHub Actions
-
-### Runners no Ubuntu 26
-
-Desde 2026-10-19 o rótulo `ubuntu-latest` está migrando para o Ubuntu 26
-([runner-images#14748](https://github.com/actions/runner-images/issues/14748)), e os dois
-workflows fixam `ubuntu-24.04` desde 2026-10-28. Eles só rodam no push no `main`, então testar
-no Ubuntu 26 direto neles seria fazer deploy a partir dele. O job `test` pode ser testado antes
-num branch, com `ubuntu-26.04` e um gatilho de `pull_request`; os jobs que fazem deploy só
-trocam depois disso.
