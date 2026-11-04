@@ -92,6 +92,7 @@ A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 
 ```bash
 uv run pytest            # sem rede: reconhecedor, corpus, guardrail com fakes, API
+uv run pytest --cov      # o mesmo, com cobertura; falha abaixo do piso do pyproject.toml
 uv run pytest -m eval    # chama a API de verdade (custa dinheiro) e grava tests/eval/report.json
 uv run ruff check . && uv run ruff format --check .
 ```

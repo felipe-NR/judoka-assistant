@@ -19,6 +19,7 @@ dev = [
     "httpx>=0.27",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pytest-cov>=7.0",
     "ruff>=0.8",
 ]
 
@@ -42,3 +43,14 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = ["eval: chama a API do provedor configurado de verdade (custa dinheiro)"]
 addopts = "-m 'not eval'"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+# Piso da cobertura de linhas e ramos no CI (deploy.yml). Com os testes do PR #32 ela ficou
+# em 95%; o piso deixa margem para refatorações sem aceitar módulos novos sem teste.
+fail_under = 93
+show_missing = true
+skip_covered = true
