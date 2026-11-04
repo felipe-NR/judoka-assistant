@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -146,3 +147,40 @@ def test_block_leaves_out_recognizer_only_fields(corpus: Corpus) -> None:
     assert "背負投" not in text
     # Conceitos com verbete da FGJ aparecem só no glossário de termos.
     assert "### Kuzushi" not in text and "- KUZUSHI:" in text
+
+
+def _append(text: str) -> Callable[[str], str]:
+    return lambda original: original + text
+
+
+@pytest.mark.parametrize(
+    ("relative", "change", "message"),
+    [
+        ("glossario/tecnicas.yaml", lambda _: "tecnicas: []\n", "esperava uma lista de objetos"),
+        ("glossario/tecnicas.yaml", lambda original: original + original, "ids de técnica repetidos"),
+        ("glossario/nomes_populares.yaml", lambda original: original + original, "nomes populares repetidos"),
+        ("regras/pontuacao.md", lambda original: original.removeprefix("---\n"), "falta o cabeçalho YAML"),
+        ("regras/pontuacao.md", lambda _: "---\n- titulo\n---\ncorpo\n", "cabeçalho YAML inválido"),
+        ("fgj/tecnicas.yaml", _append("- id: nao-existe\n"), "técnica inexistente 'nao-existe'"),
+        ("glossario/termos_regras.yaml", _append("- termo: Ippon\n  documento: regras/nao-existe\n"), "inexistente"),
+        ("glossario/termos_regras.yaml", _append("- termo: Ippon\n  documento: regras/pontuacao\n"), "repetidos"),
+        ("glossario/variantes_digitacao.yaml", lambda _: "- osoto\n", "esperava um mapa"),
+    ],
+)
+def test_loader_rejects_invalid_data(tmp_path: Path, relative: str, change: Callable[[str], str], message: str) -> None:
+    path = _copy_data(tmp_path) / relative
+    path.write_text(change(path.read_text("utf-8")), "utf-8")
+    with pytest.raises(CorpusError, match=message):
+        load_corpus(tmp_path)
+
+
+def test_loader_accepts_missing_optional_files(tmp_path: Path) -> None:
+    data = _copy_data(tmp_path)
+    for relative in ("fgj", "fases"):
+        for path in (data / relative).iterdir():
+            path.unlink()
+    for relative in ("glossario/termos_regras.yaml", "glossario/variantes_digitacao.yaml"):
+        (data / relative).unlink()
+    corpus = load_corpus(data)
+    assert corpus.techniques and not corpus.rule_terms
+    assert not any(document.id.startswith("termos/") for document in corpus.documents)
