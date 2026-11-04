@@ -34,6 +34,25 @@
            padding: calc(18px + env(safe-area-inset-top)) 16px 12px; background: var(--weave-blue) var(--blue); color: #eef1f8; }
   h1 { margin: 0; font: 800 1.35rem "Shippori Mincho B1", serif; }
   header span { font: 600 1rem "Shippori Mincho B1", serif; color: var(--stitch); }
+  .header-end { display: flex; align-items: baseline; gap: 12px; }
+  /* Só aparece quando há conversa salva; apaga depois da confirmação no diálogo. */
+  #new-chat { min-height: 36px; padding: 0 14px; border: 1px solid var(--stitch); border-radius: 18px; background: transparent;
+       color: #eef1f8; font: 700 .85rem "Atkinson Hyperlegible", sans-serif; cursor: pointer; }
+  #new-chat[hidden] { display: none; }
+  #new-chat:disabled { opacity: .5; cursor: wait; }
+  dialog { max-width: min(420px, calc(100vw - 32px)); padding: 26px 20px 18px; border: 0; border-radius: 8px; color: var(--ink);
+       background: var(--weave-blue) top / 100% 10px no-repeat, linear-gradient(var(--blue), var(--blue)) top / 100% 10px no-repeat, var(--white); }
+  /* O form do diálogo não segue o layout em linha do form da pergunta. */
+  dialog form { display: block; }
+  dialog::backdrop { background: rgba(22, 35, 28, .6); }
+  dialog h2 { margin: 0 0 8px; font: 800 1.3rem "Shippori Mincho B1", serif; color: var(--blue); }
+  dialog p { margin: 0 0 18px; }
+  dialog .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  dialog form button { flex: 0 0 auto; height: auto; min-height: 44px; padding: 0 18px; border-radius: 22px; display: inline-block;
+       cursor: pointer; font: 700 .95rem "Atkinson Hyperlegible", sans-serif; }
+  dialog .cancel { border: 2px solid var(--blue); background: var(--white); color: var(--blue); }
+  dialog .confirm { border: 2px solid var(--hinomaru); background: var(--hinomaru); color: var(--white); }
+  dialog :focus-visible { outline-color: var(--blue); }
 
   #log { display: flex; flex-direction: column; gap: 12px; padding: 20px 12px; overflow-y: auto; overscroll-behavior: contain; }
   /* Mesma folha das respostas: texto direto no tatame fica difícil de ler. */
@@ -133,7 +152,10 @@
 <main>
   <header>
     <h1>Judô Chat</h1>
-    <span lang="ja">柔道</span>
+    <div class="header-end">
+      <button type="button" id="new-chat" hidden>Nova conversa</button>
+      <span lang="ja">柔道</span>
+    </div>
   </header>
   <aside class="install" id="install" aria-label="Instalar o app" hidden>
     <p></p>
@@ -161,6 +183,16 @@
     </form>
   </div>
 </main>
+<dialog id="confirm-new" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <h2 id="confirm-title">Começar uma nova conversa?</h2>
+    <p>A conversa atual será apagada deste aparelho e não poderá ser recuperada.</p>
+    <div class="actions">
+      <button value="cancel" class="cancel" autofocus>Cancelar</button>
+      <button value="confirm" class="confirm">Apagar e começar</button>
+    </div>
+  </form>
+</dialog>
 <script src="config.js"></script>
 <script>
   // Vazio quando a página é servida pela própria API; no GitHub Pages, a URL pública da API.
@@ -275,17 +307,17 @@
     body.appendChild(box);
   }
 
-  function addUser(text) {
+  function addUser(text, scroll = true) {
     const div = document.createElement("div");
     div.className = "msg user";
     div.textContent = text;
     log.appendChild(div);
-    div.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (scroll) div.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
   // O kanji vai na coluna ao lado só quando a resposta apresenta uma técnica: com várias,
   // a coluna não diria de qual delas é, e cada kanji vai junto dos vídeos da sua técnica.
-  function addAnswer(text, tags, groups) {
+  function addAnswer(text, tags, groups, scroll = true) {
     const div = document.createElement("article");
     div.className = "msg bot";
     const anchored = (groups || []).filter((g) => g.anchor);
@@ -309,7 +341,7 @@
       div.appendChild(small);
     }
     log.appendChild(div);
-    div.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (scroll) div.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function addWaiting() {
@@ -322,7 +354,7 @@
     return div;
   }
 
-  function addStop(title, text) {
+  function addStop(title, text, scroll = true) {
     const div = document.createElement("div");
     div.className = "msg refused";
     div.setAttribute("role", "note");
@@ -330,7 +362,7 @@
     div.querySelector("strong").textContent = title;
     div.querySelector("p").textContent = text;
     log.appendChild(div);
-    div.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (scroll) div.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
   // Perguntas que o corpus responde; a linha de baixo diz de onde sai a resposta.
@@ -388,7 +420,105 @@
   // Últimas trocas da conversa, enviadas a cada pergunta (o servidor não guarda estado).
   const MAX_TURNS = 6;
   const MAX_TURN_CHARS = 1500;
-  let history = [];
+
+  // Conversa salva no aparelho (docs/decisoes/0002-disponibilizar-como-pwa.md): as últimas
+  // MAX_SAVED mensagens, sem prazo de validade. Só o botão "Nova conversa", depois da
+  // confirmação, apaga. Pergunta e resposta entram juntas; erros de rede não entram, porque
+  // não fariam sentido ao reabrir.
+  const SAVED = "judo-chat:conversa";
+  const MAX_SAVED = 20;
+  const newChat = document.getElementById("new-chat");
+  const confirmNew = document.getElementById("confirm-new");
+  let messages = [];
+
+  function isMessage(m) {
+    return m && typeof m.text === "string" && ["user", "answer", "refused"].includes(m.kind);
+  }
+
+  function loadMessages() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVED) || "null");
+      return saved && Array.isArray(saved.messages) ? saved.messages.filter(isMessage).slice(-MAX_SAVED) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveMessages() {
+    try {
+      localStorage.setItem(SAVED, JSON.stringify({ v: 1, messages }));
+    } catch (e) { /* sem armazenamento ou cheio: a conversa fica só na tela */ }
+  }
+
+  // O histórico mandado à API sai das mensagens salvas: só pares de pergunta e resposta, como
+  // antes; as recusas ficam de fora.
+  function apiHistory() {
+    const turns = [];
+    messages.forEach((m, i) => {
+      const next = messages[i + 1];
+      if (m.kind === "user" && next && next.kind === "answer") {
+        turns.push({ role: "usuario", text: m.text }, { role: "assistente", text: next.text.slice(0, MAX_TURN_CHARS) });
+      }
+    });
+    return turns.slice(-MAX_TURNS);
+  }
+
+  function remember(question, reply) {
+    messages = messages.concat([{ kind: "user", text: question }, reply]).slice(-MAX_SAVED);
+    saveMessages();
+    newChat.hidden = false;
+  }
+
+  function showIntro() {
+    const intro = document.createElement("div");
+    intro.className = "intro";
+    intro.innerHTML = '<p></p><ul class="starters"></ul>';
+    log.replaceChildren(intro);
+    renderIntro(document.querySelector('.topics button[aria-pressed="true"]'));
+  }
+
+  function restore() {
+    messages = loadMessages();
+    if (!messages.length) return;
+    log.replaceChildren();
+    for (const m of messages) {
+      try {
+        if (m.kind === "user") addUser(m.text, false);
+        else if (m.kind === "answer") addAnswer(m.text, m.tags || "", m.groups || [], false);
+        else addStop("Matte", m.text, false);
+      } catch (e) { /* registro estragado: pula e segue com os outros */ }
+    }
+    log.scrollTop = log.scrollHeight;
+    newChat.hidden = false;
+  }
+
+  function clearConversation() {
+    messages = [];
+    try { localStorage.removeItem(SAVED); } catch (e) { /* nada salvo para apagar */ }
+    newChat.hidden = true;
+    showIntro();
+    input.focus();
+  }
+
+  newChat.addEventListener("click", () => {
+    if (button.disabled) return;
+    if (typeof confirmNew.showModal === "function") {
+      confirmNew.returnValue = "";
+      confirmNew.showModal();
+    } else if (window.confirm("Começar uma nova conversa? A conversa atual será apagada deste aparelho e não poderá ser recuperada.")) {
+      clearConversation();
+    }
+  });
+  confirmNew.addEventListener("close", () => {
+    if (confirmNew.returnValue === "confirm") clearConversation();
+  });
+
+  restore();
+
+  function setBusy(busy) {
+    button.disabled = busy;
+    newChat.disabled = busy;
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -401,13 +531,13 @@
     addUser(query);
     input.value = "";
     fitInput();
-    button.disabled = true;
+    setBusy(true);
     const waiting = addWaiting();
     try {
       const response = await fetch(API_URL + "/api/perguntar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, history }),
+        body: JSON.stringify({ query, history: apiHistory() }),
       });
       const data = await response.json();
       waiting.remove();
@@ -417,22 +547,20 @@
       }
       if (data.refused) {
         addStop("Matte", data.answer);
+        remember(query, { kind: "refused", text: data.answer });
         return;
       }
       const found = data.techniques_detected.map((t) => t.term + (t.ambiguous ? " (ambíguo)" : ""));
       const tags = found.length ? "Técnicas reconhecidas: " + found.join(", ") : "";
       addAnswer(data.answer, tags, data.video_groups);
-      history = history.concat([
-        { role: "usuario", text: query },
-        { role: "assistente", text: data.answer.slice(0, MAX_TURN_CHARS) },
-      ]).slice(-MAX_TURNS);
+      remember(query, { kind: "answer", text: data.answer, tags, groups: data.video_groups || [] });
     } catch (error) {
       waiting.remove();
       // Com o app instalado, a página abre do cache sem rede; a pergunta é que não sai.
       if (!navigator.onLine) addStop("Sem conexão", "O celular está sem internet. Tente de novo quando a conexão voltar.");
       else addStop("Sem resposta", "Não foi possível falar com o servidor. Ele pode estar desligado.");
     } finally {
-      button.disabled = false;
+      setBusy(false);
       input.focus();
     }
   });

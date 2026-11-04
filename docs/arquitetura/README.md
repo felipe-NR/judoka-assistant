@@ -147,7 +147,10 @@ recusa correta de 95% ou mais e falsa recusa de 5% ou menos.
   da FGJ, dos nomes ("X-gaeshi", "Kuzure-X") e das séries do Projeto Budô. Perguntas sobre
   contragolpes, variações ou combinações levam as fichas das técnicas relacionadas.
 - **Conversa:** a página envia as últimas 3 trocas em `history`; o servidor não guarda
-  estado. O histórico vai ao modelo como dado, depois do trecho cacheado.
+  estado. O histórico vai ao modelo como dado, depois do trecho cacheado. A página guarda as
+  últimas 20 mensagens no `localStorage` do aparelho e as mostra de novo ao reabrir; só o botão
+  "Nova conversa", confirmado, as apaga
+  ([`../decisoes/0002-disponibilizar-como-pwa.md`](../decisoes/0002-disponibilizar-como-pwa.md)).
 
 ## Atualizar
 
