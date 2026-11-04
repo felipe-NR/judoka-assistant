@@ -600,10 +600,10 @@ def production_deployment():
             + text(x + w - 8, y + 16, version, 9, MUTED, MONO, "end")
         )
 
-    b.append(node(48, 104, 192, 64, "USER", "Navegador", "visitante", "input"))
+    b.append(node(48, 104, 192, 64, "USER", "Navegador", "visitante · service worker", "input"))
     b.append(node(48, 472, 192, 64, "EXT", "OpenAI", "Decisions + Responses", "external"))
     b.append(node(336, 104, 200, 96, "CDN", "GitHub Pages", None, "backend", name_y=144))
-    b.append(chip(352, 160, 168, "index.html", "pages.yml"))
+    b.append(chip(352, 160, 168, "index.html, sw.js", "pages.yml"))
     b.append(node(736, 104, 200, 96, "CI", "GitHub Actions", None, "backend", name_y=144))
     b.append(chip(752, 160, 168, "deploy.yml", "ubuntu-24.04"))
     b.append(node(336, 312, 200, 80, "EDGE", "Tailscale Funnel", "entrada pública da API", "focal"))
@@ -643,7 +643,7 @@ def production_deployment():
         "Deployment · Arquitetura CAG",
         "Onde roda",
         "Onde o judoka-assistant roda",
-        "Implantação em três zonas: o navegador na internet pública busca a página no GitHub Pages e pergunta pela entrada pública da API, o Tailscale Funnel, que entrega à API na VM; o GitHub Actions faz deploy pela tailnet via SSH, e não há porta aberta direto na VM.",
+        "Implantação em três zonas: o navegador na internet pública busca a página no GitHub Pages, onde o service worker a guarda para abrir sem conexão, e pergunta pela entrada pública da API, o Tailscale Funnel, que entrega à API na VM; o GitHub Actions faz deploy pela tailnet via SSH, e não há porta aberta direto na VM.",
         1000,
         640,
         "\n".join(b),

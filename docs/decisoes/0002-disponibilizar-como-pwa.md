@@ -1,6 +1,6 @@
 # 0002: Disponibilizar a página como PWA no Android e no iOS
 
-- **Estado:** aceita, implementação pendente.
+- **Estado:** aceita e implementada.
 - **Data:** 2026-11-04, depois de auditar uma pesquisa sobre o suporte a PWA nas duas plataformas.
 
 ## Contexto
@@ -73,14 +73,19 @@ Cada item tem a condição que leva a revê-lo.
   iOS o app instalado não vê o que o Safari guardou, então o histórico não migraria. Rever se os
   usuários pedirem para retomar perguntas.
 
-## Consequências para a implementação
+## Implementação
 
-- Se a versão do cache for gravada pelo `pages.yml`, como hoje acontece com o `config.js`, a mudança
-  é no fluxo de deploy: o mesmo PR atualiza `docs/operacao/deploy.md` e o `AGENTS.md`.
-- O diagrama de onde a API roda (`docs/arquitetura/producao-implantacao`) passa a mostrar o service
-  worker entre a página e a rede, gerado de novo por `scripts/diagramas_arquitetura.py`.
-- A verificação manual cobre Chrome no Android, Safari no iOS, Firefox no Android e um link aberto
-  pelo WhatsApp, com a página instalada e sem conexão.
+- Arquivos em `src/judo_chat/static/`: `manifest.webmanifest`, `sw.js`, `icon-192.png`,
+  `icon-512.png`, `icon-maskable-512.png` e `apple-touch-icon.png`. A faixa de instalação e o
+  registro do service worker estão no fim do `index.html`.
+- O `pages.yml` grava o commit no lugar de `__VERSAO__` no `sw.js`. O fluxo está em
+  `docs/operacao/deploy.md`.
+- O diagrama de onde a API roda (`docs/arquitetura/producao-implantacao`) mostra o `sw.js` no
+  Pages e o service worker no navegador.
+- `tests/api/test_chat_page.py` confere que o manifest, o service worker e os ícones saem com a
+  página e batem entre si.
+- Falta conferir em aparelho real: Chrome no Android, Safari no iOS, Firefox no Android e um link
+  aberto pelo WhatsApp, com a página instalada e sem conexão.
 
 ## Referências
 
