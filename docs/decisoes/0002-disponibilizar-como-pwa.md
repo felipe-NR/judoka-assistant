@@ -2,6 +2,8 @@
 
 - **Estado:** aceita e implementada.
 - **Data:** 2026-11-04, depois de auditar uma pesquisa sobre o suporte a PWA nas duas plataformas.
+  No mesmo dia, o histórico local saiu de "Fora do escopo" e entrou na decisão, depois do primeiro
+  teste no Android.
 
 ## Contexto
 
@@ -58,6 +60,17 @@ Firefox, onde o evento não existe, o botão dá lugar a um texto curto com o ca
 o banner pede para abrir o link no navegador antes de qualquer passo de instalação. A detecção pode
 errar; o banner falso só custa um aviso a mais.
 
+**Conversa salva no aparelho.** No primeiro teste com o app instalado no Android, a conversa
+sumiu ao reabrir pelo ícone: ela só existia na memória da página, e o Android recarrega o app
+quando o fecha em segundo plano. A página passa a guardar no `localStorage` as últimas 20
+mensagens, com o texto da resposta, os vídeos e as técnicas reconhecidas, e as mostra de novo ao
+abrir. Pergunta e resposta (ou recusa) entram juntas; os erros de rede ficam de fora, porque não
+fariam sentido ao reabrir. O histórico mandado à API sai dessas mensagens, com o mesmo limite de
+antes. A conversa não expira: só o botão "Nova conversa" a apaga, e só depois de um diálogo em que
+o usuário confirma que vai perder a conversa atual. Os dados ficam no aparelho e a API continua sem
+guardar nada. No iOS, o app instalado não vê o que foi salvo no Safari, então a conversa começada
+num não aparece no outro.
+
 ## Fora do escopo agora
 
 Cada item tem a condição que leva a revê-lo.
@@ -69,9 +82,8 @@ Cada item tem a condição que leva a revê-lo.
 - **Notificações push.** Exigem um servidor de push, o pedido de permissão e, no iOS, o app
   instalado. O produto responde perguntas e não tem o que avisar. Rever se entrar algum conteúdo
   com data, como calendário de exames.
-- **Histórico local.** Guardar conversas no aparelho traz decisões de privacidade e de limpeza. No
-  iOS o app instalado não vê o que o Safari guardou, então o histórico não migraria. Rever se os
-  usuários pedirem para retomar perguntas.
+- **Várias conversas.** Só a conversa atual fica salva. Uma lista de conversas anteriores pediria
+  navegação e limpeza por item. Rever se os usuários pedirem para voltar a conversas antigas.
 
 ## Implementação
 
@@ -82,6 +94,8 @@ Cada item tem a condição que leva a revê-lo.
   `docs/operacao/deploy.md`.
 - O diagrama de onde a API roda (`docs/arquitetura/producao-implantacao`) mostra o `sw.js` no
   Pages e o service worker no navegador.
+- A conversa salva usa a chave `judo-chat:conversa` do `localStorage`; o botão "Nova conversa" e
+  o diálogo `#confirm-new` ficam no cabeçalho e no fim do `index.html`.
 - `tests/api/test_chat_page.py` confere que o manifest, o service worker e os ícones saem com a
   página e batem entre si.
 - Falta conferir em aparelho real: Chrome no Android, Safari no iOS, Firefox no Android e um link

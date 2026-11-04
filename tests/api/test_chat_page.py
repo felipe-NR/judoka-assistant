@@ -47,3 +47,19 @@ def test_pwa_files_are_served_and_consistent() -> None:
     for name in shell:
         assert f'"{name}"' in worker
         assert client.get("/" + name).status_code == 200
+
+
+def test_saved_conversation_is_cleared_only_after_confirmation() -> None:
+    # A conversa fica no aparelho sem prazo; só o "Nova conversa" confirmado apaga
+    # (docs/decisoes/0002-disponibilizar-como-pwa.md).
+    app = FastAPI()
+    mount_chat_page(app)
+    page = TestClient(app).get("/").text
+    assert 'const SAVED = "judo-chat:conversa";' in page
+    assert "const MAX_SAVED = 20;" in page
+    assert '<dialog id="confirm-new"' in page
+    assert 'value="confirm"' in page
+    # A remoção da conversa só aparece dentro de clearConversation, chamada pela confirmação.
+    assert page.count("localStorage.removeItem(SAVED)") == 1
+    clear = page.split("function clearConversation()")[1].split("\n  }\n")[0]
+    assert "localStorage.removeItem(SAVED)" in clear
