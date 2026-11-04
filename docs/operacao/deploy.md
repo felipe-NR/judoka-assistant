@@ -31,7 +31,9 @@ e liga o Funnel. Logs:
 O workflow `.github/workflows/deploy.yml` roda a cada push no `main` que mexe no backend
 (`src/` fora de `static/`, `data/`, `pyproject.toml`, `uv.lock`, `deploy/`), e também pela
 aba Actions (`workflow_dispatch`). Ele roda o `ruff` e os testes de `tests/api` e
-`tests/unit` e, se passarem, instala o commit na VM. Por último, um job fora da tailnet
+`tests/unit` com cobertura (`pytest-cov`) e, se passarem, instala o commit na VM. O job de
+testes mostra as linhas sem teste e falha se a cobertura de linhas e ramos ficar abaixo do
+piso `fail_under` de `[tool.coverage.report]` no `pyproject.toml`. Por último, um job fora da tailnet
 confere a URL pública com um preflight de CORS, que não chama o provedor nem conta no rate
 limit. Ele fica fora porque, dentro da tailnet, o nome da VM resolve para o IP da tailnet e
 não para o Funnel. Mudanças só na página continuam saindo pelo `pages.yml`.
