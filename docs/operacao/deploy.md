@@ -10,6 +10,13 @@ workflow `.github/workflows/pages.yml` a cada push que mexe em `src/judo_chat/st
 O GitHub Pages só serve arquivos estáticos; a URL da API vem da variável de repositório
 `JUDO_CHAT_API_URL`.
 
+A página é um PWA (decisão em
+[`../decisoes/0002-disponibilizar-como-pwa.md`](../decisoes/0002-disponibilizar-como-pwa.md)).
+O `pages.yml` troca o marcador `__VERSAO__` do `sw.js` pelos 12 primeiros caracteres do commit,
+e o passo falha se a troca não acontecer. Cada publicação cria um cache novo no service worker e
+apaga o anterior. O `config.js` fica fora desse cache, então trocar `JUDO_CHAT_API_URL` vale na
+próxima abertura da página, mesmo no app instalado.
+
 Em produção a API roda numa VM E2.1.Micro Always Free da OCI, separada da VM do ai-memory,
 como serviço systemd (`deploy/judoka-api.service`) ouvindo só em `127.0.0.1:8010`. O acesso
 público entra pelo Tailscale Funnel, que dá HTTPS sem abrir porta na OCI. Para instalar ou

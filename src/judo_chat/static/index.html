@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1e2b63">
 <title>Judô Chat</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
@@ -25,7 +28,7 @@
   /* Cabeçalho e dock fixos nas pontas e só a conversa rola. Com o teclado aberto no celular,
      a altura acompanha a área visível (interactive-widget e o script no fim); antes a página
      rolava e o cabeçalho sumia, com o tatame aparecendo entre o campo e o teclado. */
-  main { max-width: 640px; margin: 0 auto; height: var(--app-height, 100dvh); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+  main { max-width: 640px; margin: 0 auto; height: var(--app-height, 100dvh); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
 
   header { display: flex; align-items: baseline; justify-content: space-between;
            padding: calc(18px + env(safe-area-inset-top)) 16px 12px; background: var(--weave-blue) var(--blue); color: #eef1f8; }
@@ -111,6 +114,18 @@
   form button:disabled { opacity: .5; cursor: wait; }
   :focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
   .msg :focus-visible { outline-color: var(--blue); }
+  /* Faixa de instalação (docs/decisoes/0002-disponibilizar-como-pwa.md), logo abaixo do cabeçalho. */
+  .install { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; background: #f1f3f9;
+       border-left: 4px solid var(--blue); font-size: .92rem; line-height: 1.4; }
+  .install[hidden] { display: none; }
+  /* Linhas fixas: com a faixa escondida, a conversa e o dock não sobem uma linha na grade. */
+  header { grid-row: 1; } .install { grid-row: 2; } #log { grid-row: 3; } .dock { grid-row: 4; }
+  .install p { flex: 1; margin: 0; }
+  .install b { color: var(--blue); }
+  .install button { flex: 0 0 auto; min-height: 40px; border-radius: 20px; cursor: pointer; font: 700 .92rem "Atkinson Hyperlegible", sans-serif; }
+  .install .do { padding: 0 16px; border: 0; background: var(--blue); color: var(--white); }
+  .install .close { width: 40px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  .install :focus-visible { outline-color: var(--blue); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>
 </head>
@@ -120,6 +135,11 @@
     <h1>Judô Chat</h1>
     <span lang="ja">柔道</span>
   </header>
+  <aside class="install" id="install" aria-label="Instalar o app" hidden>
+    <p></p>
+    <button type="button" class="do" hidden>Instalar</button>
+    <button type="button" class="close" aria-label="Dispensar">×</button>
+  </aside>
   <section id="log" aria-live="polite">
     <div class="intro">
       <p>Descrição do Kodokan e princípio de cada técnica, com o vídeo oficial quando existe.</p>
@@ -408,7 +428,9 @@
       ]).slice(-MAX_TURNS);
     } catch (error) {
       waiting.remove();
-      addStop("Sem resposta", "Não foi possível falar com o servidor. Ele pode estar desligado.");
+      // Com o app instalado, a página abre do cache sem rede; a pergunta é que não sai.
+      if (!navigator.onLine) addStop("Sem conexão", "O celular está sem internet. Tente de novo quando a conexão voltar.");
+      else addStop("Sem resposta", "Não foi possível falar com o servidor. Ele pode estar desligado.");
     } finally {
       button.disabled = false;
       input.focus();
@@ -442,6 +464,74 @@
       form.requestSubmit();
     }
   });
+
+  // PWA (docs/decisoes/0002-disponibilizar-como-pwa.md). O service worker guarda só a página.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+
+  // Faixa de instalação. Some quando a página já roda instalada ou quando o usuário a dispensa;
+  // a dispensa fica no localStorage, que pode faltar (aba privada), daí o try/catch.
+  const installBar = document.getElementById("install");
+  const installText = installBar.querySelector("p");
+  const installButton = installBar.querySelector(".do");
+  const DISMISSED = "judo-chat:instalar-dispensado";
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const ua = navigator.userAgent;
+  // iPadOS se apresenta como Mac; o toque é o que o separa.
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  // Navegadores embutidos não instalam. A detecção pelo user agent pode errar; o custo é um aviso a mais.
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|WhatsApp/.test(ua);
+  const firefoxAndroid = /Android/.test(ua) && /Firefox\//.test(ua);
+  let installEvent = null;
+
+  function dismissed() {
+    try { return localStorage.getItem(DISMISSED) === "1"; } catch (e) { return false; }
+  }
+
+  function showInstall(html, withButton) {
+    if (standalone || dismissed()) return;
+    installText.innerHTML = html;
+    installButton.hidden = !withButton;
+    installBar.hidden = false;
+  }
+
+  function hideInstall() {
+    installBar.hidden = true;
+    installEvent = null;
+  }
+
+  installBar.querySelector(".close").addEventListener("click", () => {
+    try { localStorage.setItem(DISMISSED, "1"); } catch (e) { /* sem armazenamento, volta na próxima visita */ }
+    hideInstall();
+  });
+
+  // Chrome, Edge e Samsung Internet: o evento chega quando a página pode ser instalada. Segurá-lo
+  // troca o aviso do navegador pelo botão da faixa.
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    installEvent = event;
+    showInstall("Instale o <b>Judô Chat</b> para abrir pela tela inicial.", true);
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (!installEvent) return;
+    installEvent.prompt();
+    await installEvent.userChoice;
+    hideInstall();
+  });
+
+  window.addEventListener("appinstalled", hideInstall);
+
+  if (inApp) {
+    showInstall(ios
+      ? "Para instalar, abra no <b>Safari</b>: toque em <b>⋯</b> ou no ícone do navegador e escolha abrir no navegador."
+      : "Para instalar, abra no <b>navegador</b>: toque em <b>⋮</b> e escolha abrir no navegador.", false);
+  } else if (ios) {
+    showInstall("Para instalar, toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.", false);
+  } else if (firefoxAndroid) {
+    showInstall("Para instalar, abra o menu <b>⋮</b> e toque em <b>Instalar</b> ou <b>Adicionar à tela inicial</b>.", false);
+  }
 </script>
 </body>
 </html>

@@ -18,7 +18,8 @@ instalado na VM pelo `.github/workflows/deploy.yml`, que chama `/usr/local/sbin/
 <commit>` (`deploy/judoka-deploy`) por SSH dentro da tailnet. Merge no `main` é deploy em
 produção. Os testes do deploy rodam com `--cov` e falham abaixo do piso `fail_under` do
 `pyproject.toml`: teste novo acompanha código novo. O `deploy/install.sh` também baixa a base de países do bloqueio por país
-(`scripts/update_geoip.py`). A página sai pelo `pages.yml`. A configuração da VM, da tailnet e
+(`scripts/update_geoip.py`). A página sai pelo `pages.yml`, que grava a URL da API no `config.js` e o commit no
+`sw.js` do PWA, como versão do cache. A configuração da VM, da tailnet e
 dos secrets está em `docs/operacao/deploy.md`, seção "Deploy automático".
 
 Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da tailnet ou dos
