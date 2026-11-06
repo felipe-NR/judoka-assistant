@@ -203,3 +203,10 @@ def test_video_groups_cover_every_presented_technique(corpus: Corpus, recognizer
     answer = "Exame para a faixa laranja:\n" + "\n".join(f"{i}. {name}" for i, name in enumerate(names, 1))
     groups = video_groups(answer, [], recognizer, corpus)
     assert [g.anchor for g in groups] == names
+
+
+def test_recognized_terms_go_after_the_question(corpus: Corpus) -> None:
+    # Sem esta pista, o modelo recusou "O que é Ayumi-ashi?" com histórico em 4 de 30 chamadas; com ela, em 0 de 30.
+    message = build_user_message("O que é Ayumi-ashi?", [], corpus, terms=["AYUMI-ASHI (termo do judô)"])
+    assert message.index("</pergunta>") < message.index("Termos da base citados na pergunta: AYUMI-ASHI")
+    assert "Termos da base" not in build_user_message("O que é Ayumi-ashi?", [], corpus)

@@ -263,8 +263,10 @@ class OpenAIAnswerer:
             request["reasoning"] = {"effort": self._settings.answer_effort}
         return request
 
-    async def answer(self, query: str, matches: list[Match], history: Sequence[Turn] = ()) -> Answer:
-        content = build_user_message(query, matches, self._corpus, self._relations, history)
+    async def answer(
+        self, query: str, matches: list[Match], history: Sequence[Turn] = (), terms: Sequence[str] = ()
+    ) -> Answer:
+        content = build_user_message(query, matches, self._corpus, self._relations, history, terms)
         response = await self._client.with_options(timeout=self._settings.answer_timeout_s).responses.create(
             **self._request(content, self._settings.answer_max_tokens)
         )

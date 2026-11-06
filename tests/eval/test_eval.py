@@ -67,7 +67,7 @@ async def _run_case(
     if verdict.probabilities is not None:
         row["probabilidades"] = verdict.probabilities
     if verdict.allowed and case.categoria != "fora":
-        answer = await answerer.answer(case.pergunta, matches, history)
+        answer = await answerer.answer(case.pergunta, matches, history, terms)
         folded = _fold(answer.text)
         row["recusou_na_resposta"] = answer.refused
         # A resposta incompleta ou vazia também conta como recusada, mas é falha, não decisão do modelo.

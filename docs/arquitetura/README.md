@@ -82,7 +82,9 @@ até 6 palavras, fica com a mais longa e descarta palavras de borda que somem na
 `normalizer.Recognizer` acha na pergunta o nome oficial, o nome da IJF, as grafias variadas e
 os nomes populares; um nome ambíguo devolve todas as candidatas. Ele acha também os termos de
 regras, arbitragem e graduação de `data/glossario/termos_regras.yaml` e os verbetes do
-glossário da FGJ (`data/fgj/termos.yaml`), que só vão ao guardrail.
+glossário da FGJ (`data/fgj/termos.yaml`). Os termos vão ao guardrail e, depois do corte do
+cache, ao modelo de resposta: sem essa pista, ele às vezes recusava um termo da base quando a
+pergunta vinha com histórico.
 
 ### Guardrail que falha fechado
 
