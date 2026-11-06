@@ -252,7 +252,10 @@ def prompt_layers():
     b.append(text(x0, 536, "E O GUARDRAIL", 8, MUTED, MONO, spacing="0.18em"))
     for gy, line in (
         (560, "O guardrail não lê este prompt. Pela Decisions API ele recebe as próprias instruções,"),
-        (580, "o histórico, a pergunta e as técnicas reconhecidas, sem o corpus, e devolve probabilidades."),
+        (
+            580,
+            "o histórico, a pergunta e as técnicas e os termos reconhecidos, sem o corpus, e devolve probabilidades.",
+        ),
     ):
         b.append(text(x0, gy, line, 14, INK, SERIF, italic=True))
     return page(
@@ -266,7 +269,7 @@ def prompt_layers():
         "\n".join(b),
         "Este é o prompt do modelo de resposta, que gera o texto; na OpenAI ele vai pela Responses API. O guardrail é outra chamada, "
         "um classificador pela Decisions API que não gera texto. Na Anthropic, as duas chamadas usam a Messages API, e o guardrail "
-        "devolve a categoria por saída estruturada. "
+        "devolve a categoria e a continuação por saída estruturada. "
         "O prefixo (instruções e corpus) é montado por <code>build_system_text</code> na partida da API e não muda entre perguntas. "
         "Na OpenAI, que é a produção, ele fica no cache por 12 horas (<code>prompt_cache_options.ttl</code>); na Anthropic, por 1 hora com "
         "re-aquecimento (<code>keepalive.py</code>). As camadas 03 a 05 são a mensagem do usuário, montada por <code>build_user_message</code>. "
@@ -280,10 +283,10 @@ def question_sequence():
     b = []
     for cx in (P, A, G, M):
         b.append(
-            f'<line x1="{cx}" y1="128" x2="{cx}" y2="640" stroke="{ink(0.22)}" stroke-width="1" stroke-dasharray="3,3"/>'
+            f'<line x1="{cx}" y1="128" x2="{cx}" y2="688" stroke="{ink(0.22)}" stroke-width="1" stroke-dasharray="3,3"/>'
         )
     # Fragmento ALT (atrás das mensagens)
-    fx, fy, fw, fh = 88, 360, 804, 264
+    fx, fy, fw, fh = 88, 360, 804, 312
     b.append(
         f'<rect x="{fx}" y="{fy}" width="{fw}" height="{fh}" rx="4" fill="{ink(0.02)}" stroke="{ink(0.22)}" stroke-width="1"/>'
     )
@@ -300,9 +303,9 @@ def question_sequence():
     )
     # Barras de ativação
     act = 'fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"'
-    b.append(f'<rect x="{A - 4}" y="176" width="8" height="432" {act}/>')
+    b.append(f'<rect x="{A - 4}" y="176" width="8" height="480" {act}/>')
     b.append(f'<rect x="{G - 4}" y="304" width="8" height="32" {act}/>')
-    b.append(f'<rect x="{M - 4}" y="492" width="8" height="32" {act}/>')
+    b.append(f'<rect x="{M - 4}" y="540" width="8" height="32" {act}/>')
 
     def call(x1, x2, y, color, marker, dashed=False, width=1.2):
         dash = ' stroke-dasharray="5,4"' if dashed else ""
@@ -318,22 +321,24 @@ def question_sequence():
         call(A + 4, G - 4, 304, LINK, "arrow-link"),
         call(G - 4, A + 4, 336, MUTED, "arrow", dashed=True),
         call(A - 4, P, 420, MUTED, "arrow", dashed=True),
-        call(A + 4, M - 4, 492, LINK, "arrow-link"),
-        call(M - 4, A + 4, 524, MUTED, "arrow", dashed=True),
-        self_loop(548, 572),
-        call(A - 4, P, 604, ACCENT, "arrow-accent", width=1.4),
+        self_loop(484, 508),
+        call(A + 4, M - 4, 540, LINK, "arrow-link"),
+        call(M - 4, A + 4, 572, MUTED, "arrow", dashed=True),
+        self_loop(596, 620),
+        call(A - 4, P, 652, ACCENT, "arrow-accent", width=1.4),
     ]
     b += [
-        label((P + A) / 2, 176, "POST PERGUNTAR", LINK),
+        label((P + A) / 2, 176, "POST PERGUNTAR + HISTÓRICO", LINK),
         side_label(A + 48, 212, "PAÍS + LIMITE"),
-        side_label(A + 48, 260, "RECONHECEDOR"),
-        label((A + G) / 2, 304, "CLASSIFICAR", LINK),
-        label((A + G) / 2, 336, "CATEGORIA"),
+        side_label(A + 48, 260, "RECONHECEDOR: TÉCNICAS + TERMOS"),
+        label((A + G) / 2, 304, "CLASSIFICAR + HISTÓRICO", LINK),
+        label((A + G) / 2, 336, "CATEGORIA + CONTINUAÇÃO"),
         label((P + A) / 2, 420, "RECUSA"),
-        label((G + M) / 2, 492, "PREFIXO+ANEXOS", LINK),
-        label((G + M) / 2, 524, "RESPOSTA"),
-        side_label(A + 48, 560, "VÍDEOS + KANJI"),
-        label((P + A) / 2, 604, "200 · RESPOSTA", ACCENT),
+        side_label(A + 48, 496, "HERDA TÉCNICAS SE CONTINUAÇÃO"),
+        label((G + M) / 2, 540, "PREFIXO + HISTÓRICO + ANEXOS", LINK),
+        label((G + M) / 2, 572, "RESPOSTA"),
+        side_label(A + 48, 608, "VÍDEOS + KANJI"),
+        label((P + A) / 2, 652, "200 · RESPOSTA", ACCENT),
     ]
     b += [
         node(P - 80, 72, 160, 56, "WEB", "Página", "GitHub Pages", "input"),
@@ -342,39 +347,42 @@ def question_sequence():
         node(M - 80, 72, 160, 56, "LLM", "Modelo de resposta", "Responses API · cache", "focal"),
     ]
     # Legenda
-    b.append(f'<line x1="56" y1="664" x2="944" y2="664" stroke="{ink(0.10)}" stroke-width="0.8"/>')
-    b.append(text(56, 680, "LEGENDA", 8, MUTED, MONO, spacing="0.18em"))
+    b.append(f'<line x1="56" y1="712" x2="944" y2="712" stroke="{ink(0.10)}" stroke-width="0.8"/>')
+    b.append(text(56, 728, "LEGENDA", 8, MUTED, MONO, spacing="0.18em"))
     b.append(
-        f'<rect x="56" y="696" width="14" height="10" rx="2" fill="{ACCENT_TINT}" stroke="{ACCENT}" stroke-width="1"/>'
+        f'<rect x="56" y="744" width="14" height="10" rx="2" fill="{ACCENT_TINT}" stroke="{ACCENT}" stroke-width="1"/>'
     )
-    b.append(text(76, 704, "Ator em foco", 8.5, MUTED))
-    b.append(f'<rect x="188" y="692" width="4" height="18" {act}/>')
-    b.append(text(200, 704, "Ativação", 8.5, MUTED))
+    b.append(text(76, 752, "Ator em foco", 8.5, MUTED))
+    b.append(f'<rect x="188" y="740" width="4" height="18" {act}/>')
+    b.append(text(200, 752, "Ativação", 8.5, MUTED))
     b.append(
-        f'<line x1="300" y1="702" x2="328" y2="702" stroke="{LINK}" stroke-width="1.2" marker-end="url(#arrow-link)"/>'
+        f'<line x1="300" y1="750" x2="328" y2="750" stroke="{LINK}" stroke-width="1.2" marker-end="url(#arrow-link)"/>'
     )
-    b.append(text(336, 704, "Chamada HTTP", 8.5, MUTED))
+    b.append(text(336, 752, "Chamada HTTP", 8.5, MUTED))
     b.append(
-        f'<line x1="456" y1="702" x2="484" y2="702" stroke="{MUTED}" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>'
+        f'<line x1="456" y1="750" x2="484" y2="750" stroke="{MUTED}" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>'
     )
-    b.append(text(492, 704, "Retorno", 8.5, MUTED))
+    b.append(text(492, 752, "Retorno", 8.5, MUTED))
     b.append(
-        f'<line x1="592" y1="702" x2="620" y2="702" stroke="{ACCENT}" stroke-width="1.4" marker-end="url(#arrow-accent)"/>'
+        f'<line x1="592" y1="750" x2="620" y2="750" stroke="{ACCENT}" stroke-width="1.4" marker-end="url(#arrow-accent)"/>'
     )
-    b.append(text(628, 704, "Resposta final", 8.5, MUTED))
+    b.append(text(628, 752, "Resposta final", 8.5, MUTED))
     return page(
         "pergunta-sequencia",
         "Sequence · Arquitetura CAG",
         "Uma pergunta, ponta a ponta",
         "Uma pergunta, ponta a ponta",
-        "Sequência de uma pergunta: a página chama a API, que passa pelo bloqueio por país, pelo rate limit e pelo reconhecedor, consulta o guardrail e, dentro do escopo, chama o modelo de resposta com o prefixo cacheado antes de devolver a resposta com vídeos e kanji.",
+        "Sequência de uma pergunta: a página chama a API, que passa pelo bloqueio por país, pelo rate limit e pelo reconhecedor, consulta o guardrail, que devolve a categoria e se a pergunta continua a troca anterior, e, dentro do escopo, chama o modelo de resposta com o prefixo cacheado antes de devolver a resposta com vídeos e kanji.",
         1000,
-        724,
+        772,
         "\n".join(b),
         "Só o guardrail e o modelo de resposta chamam um provedor. Na produção (OpenAI), o guardrail é um classificador pela Decisions API, "
         "que devolve probabilidades em vez de texto, e o modelo de resposta gera o texto pela Responses API, com o prefixo no cache. "
         "Na Anthropic, as duas chamadas usam a Messages API. Antes delas, o bloqueio por país responde 403 e o rate limit responde 429, "
         "sem gastar crédito. Se o guardrail falhar, a página recebe a mensagem de indisponibilidade pelo mesmo ramo da recusa. "
+        "O guardrail recebe os mesmos turnos completos do histórico que o modelo de resposta, e os delimitadores reservados do prompt "
+        "são removidos da pergunta e do histórico (<code>strip_prompt_tags</code>). Uma pergunta sem técnica nem termo próprios só herda "
+        "as técnicas da última pergunta do histórico se o guardrail indicar continuação. "
         "Vídeos, kanji e pronúncia saem dos dados (<code>video_groups</code>), sem modelo.",
     )
 
