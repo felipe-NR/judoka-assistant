@@ -22,10 +22,6 @@ from judo_chat.schemas import (
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["perguntas"])
 
-# Quanto do histórico vai ao guardrail: só o suficiente para entender a continuação.
-_GUARDRAIL_TURNS = 4
-_GUARDRAIL_TURN_CHARS = 400
-
 
 @router.post("/perguntar", response_model=AskResponse, dependencies=[Depends(enforce_question_rate_limit)])
 async def ask(
@@ -51,10 +47,9 @@ async def ask(
         last_matches = recognizer.find(last_question)
 
     technique_names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
-    guardrail_history = [
-        f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text[:_GUARDRAIL_TURN_CHARS]}"
-        for t in history[-_GUARDRAIL_TURNS:]
-    ]
+    # O guardrail recebe os mesmos turnos completos que o modelo de resposta: nenhum trecho do
+    # histórico chega à resposta sem passar antes pela classificação.
+    guardrail_history = [f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text}" for t in history]
     verdict = await guardrail.classify(body.query, guardrail_history, technique_names, terms)
     if not verdict.allowed:
         # Falha do guardrail também bloqueia a resposta, mas sem dizer que a pergunta saiu do escopo.

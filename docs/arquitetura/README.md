@@ -133,9 +133,10 @@ indisponibilidade e o log registra a categoria. `fallbacks: "default"` (beta
 
 ### Avaliação
 
-`tests/eval/cases.yaml` tem 164 perguntas: 129 dentro do escopo (técnica com grafias
-variadas, nomes populares e ambíguos, conceitos, regras, história, misto) e 35 fora (25 temas
-gerais e 10 adversariais). O reconhecedor roda contra todas sem rede, no CI. Guardrail e
+`tests/eval/cases.yaml` tem 167 perguntas: 130 dentro do escopo (técnica com grafias
+variadas, nomes populares e ambíguos, conceitos, regras, história, misto e continuação) e 37
+fora (25 temas gerais e 12 adversariais, incluindo injeção via `history`). O reconhecedor
+roda contra todas sem rede, no CI. Guardrail e
 resposta rodam com `pytest -m eval`, com as metas de falso-aceite adversarial igual a 0,
 recusa correta de 95% ou mais e falsa recusa de 5% ou menos.
 
