@@ -1,0 +1,36 @@
+# Confere, sem rede e sem secrets, os números dos documentos contra tests/eval/resultado.json e
+# tests/eval/cases.yaml. Fica fora do deploy.yml para um número defasado não travar a produção.
+name: Números da documentação
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "docs/arquitetura/README.md"
+      - "data/**"
+      - "tests/docs/**"
+      - "tests/eval/**"
+      - ".github/workflows/docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "docs/arquitetura/README.md"
+      - "data/**"
+      - "tests/docs/**"
+      - "tests/eval/**"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  numeros:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      - run: uv sync --frozen
+      - run: uv run ruff check tests/docs tests/eval
+      - run: uv run ruff format --check tests/docs tests/eval
+      - run: uv run pytest -q tests/docs

@@ -21,8 +21,8 @@ Manter o CAG enquanto as três condições valerem:
    mil, perto de 10% do degrau. No Haiku 5.5 o degrau é em 100 mil tokens, acima do qual entrada
    e saída custam 5 vezes mais; hoje são 46 mil.
 2. **Qualidade:** a avaliação (`pytest -m eval`) passa nas metas: falso-aceite adversarial 0,
-   recusa correta de 95% ou mais e falsa recusa de 5% ou menos. Na avaliação de 2026-10-23 os
-   resultados foram 0, 100% e 0%.
+   recusa correta de 95% ou mais e falsa recusa de 5% ou menos. O último resultado está na tabela
+   "Números" do [README](../../README.md).
 3. **Custo:** a pergunta com cache quente continua barata. Na OpenAI, que é a produção, ela
    custa ~US$ 0,0004 e a gravação do prefixo ~US$ 0,007 (medido em 2026-10-28); na Anthropic,
    ~US$ 0,001 por pergunta. As faixas estão em [`../operacao/custos.md`](../operacao/custos.md).
