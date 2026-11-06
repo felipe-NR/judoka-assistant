@@ -44,9 +44,9 @@ Os quatro diagramas e os componentes estão em [`docs/arquitetura/`](docs/arquit
 
 | Medida | Resultado |
 |-|-|
-| Avaliação com 167 perguntas (2026-11-06) | 0 falso-aceite adversarial, 100% de recusa correta, 0,8% de falsa recusa |
+| Avaliação com 167 perguntas (2026-11-06) | 0 falso-aceite adversarial, 100% de recusa correta, 0% de falsa recusa |
 | Custo por pergunta na produção (2026-10-28) | ~US$ 0,0004 com o cache quente; ~US$ 0,007 quando grava o prefixo |
-| Latência do guardrail | ~0,4 s de mediana pela Decisions API (2026-11-06), contra ~4 s antes |
+| Latência do guardrail | ~0,3 s de mediana pela Decisions API (2026-11-06), contra ~4 s antes |
 | Corpus no prompt | ~28 mil tokens: 104 técnicas, nomes populares, regras, história e faixas |
 
 ## Decisões de engenharia
