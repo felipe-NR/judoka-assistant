@@ -37,12 +37,15 @@ async def _run_case(
 ) -> dict[str, object]:
     history = [Turn(role=t.role, text=t.text) for t in case.historico]
     matches = recognizer.find(case.pergunta)
-    if not matches:
-        last = next((t.text for t in reversed(history) if t.role == "usuario"), "")
-        matches = recognizer.find(last)
-    names = [corpus.technique(tid).name for m in matches for tid in m.technique_ids]
     terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(case.pergunta)]
+    last_matches = []
+    if not matches and not terms and history:
+        last = next((t.text for t in reversed(history) if t.role == "usuario"), "")
+        last_matches = recognizer.find(last)
+    names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
     verdict = await guardrail.classify(case.pergunta, [f"{t.role}: {t.text}" for t in history], names, terms)
+    if not matches and verdict.continuation:
+        matches = last_matches
     row: dict[str, object] = {
         "id": case.id,
         "esperado": case.categoria,

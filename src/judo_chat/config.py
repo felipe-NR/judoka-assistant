@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     guardrail_fora_threshold: float = 0.5
     guardrail_harm_threshold: float = 0.5
     guardrail_instructions_threshold: float = 0.5
+    # Em 2026-11-06, perguntar "Ayumi-ashi" depois de "Tomoe nage" herdava a ficha do
+    # Tomoe-nage porque a pergunta não tinha técnica das 100 do Kodokan. O predicado
+    # `continuacao` decide se a pergunta depende da troca anterior.
+    guardrail_continuation_threshold: float = 0.5
     # Haiku 5.5: o modelo mais barato disponível (US$ 0,10/M de entrada e US$ 0,50/M de saída
     # com prompt de até 100 mil tokens). Para mais qualidade, use claude-sonnet-5-5 com
     # JUDO_CHAT_ANSWER_EFFORT=low e JUDO_CHAT_USE_REFUSAL_FALLBACKS=true.

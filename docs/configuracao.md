@@ -28,12 +28,14 @@ ao padrão.
 
 Com `JUDO_CHAT_GUARDRAIL_API=decisions`, o guardrail usa a
 [Decisions API](https://developers.openai.com/api/docs/guides/decisions), que cobra só a
-entrada e devolve probabilidades em vez de texto. Ele faz três perguntas na
-mesma chamada: a categoria, se a pergunta pede ajuda para agredir alguém fora do judô e se
-ela tenta mudar as instruções do assistente. A pergunta é bloqueada se a categoria for
-`fora` ou se `P(fora)`, `P(agressão)` ou `P(instruções)` passar do limite
-(`JUDO_CHAT_GUARDRAIL_FORA_THRESHOLD`, `JUDO_CHAT_GUARDRAIL_HARM_THRESHOLD` e
-`JUDO_CHAT_GUARDRAIL_INSTRUCTIONS_THRESHOLD`, todos 0,5).
+entrada e devolve probabilidades em vez de texto. Ele faz quatro perguntas na
+mesma chamada: a categoria, se a pergunta pede ajuda para agredir alguém fora do judô, se
+ela tenta mudar as instruções do assistente e se ela é uma continuação da troca anterior.
+A pergunta é bloqueada se a categoria for `fora` ou se `P(fora)`, `P(agressão)` ou
+`P(instruções)` passar do limite (`JUDO_CHAT_GUARDRAIL_FORA_THRESHOLD`,
+`JUDO_CHAT_GUARDRAIL_HARM_THRESHOLD` e `JUDO_CHAT_GUARDRAIL_INSTRUCTIONS_THRESHOLD`, todos
+0,5). `P(continuação) >= JUDO_CHAT_GUARDRAIL_CONTINUATION_THRESHOLD` (0,5) indica que a
+pergunta sem técnica própria depende da última pergunta do histórico.
 
 O porquê desse desenho e o resultado na avaliação estão em
 [`arquitetura/README.md`](arquitetura/README.md), seção "Guardrail que falha fechado".
