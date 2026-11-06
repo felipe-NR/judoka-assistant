@@ -84,6 +84,14 @@ def test_rule_terms_reach_the_guardrail(client: TestClient) -> None:
     assert techniques == [] and terms == ['Sono-mama (termo do judô em "Pontuação e duração da luta")']
 
 
+def test_term_inside_the_recognized_technique_does_not_reach_the_guardrail(client: TestClient) -> None:
+    guardrail = FakeGuardrail("tecnica")
+    app.dependency_overrides[get_guardrail] = lambda: guardrail
+    client.post("/api/perguntar", json={"query": "Sode tsuri komi goshi é perigoso para o ombro?"})
+    [(_, _, techniques, terms)] = guardrail.calls
+    assert techniques == ["Sode-tsurikomi-goshi"] and terms == []
+
+
 def test_ambiguous_name_reaches_answerer_with_candidates(client: TestClient, answerer: FakeAnswerer) -> None:
     app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
     response = client.post("/api/perguntar", json={"query": "como faço o ashi barai?"})

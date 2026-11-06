@@ -18,10 +18,10 @@ from pathlib import Path
 
 import pytest
 
-from judo_chat.answer import Turn
+from judo_chat.answer import UNAVAILABLE_MESSAGE, Turn
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
-from judo_chat.normalizer import Recognizer
+from judo_chat.normalizer import Recognizer, terms_outside_techniques
 from judo_chat.providers import AnswerProvider, GuardrailProvider, create_providers
 
 from .cases import Case, load_cases
@@ -44,12 +44,13 @@ async def _run_case(
 ) -> dict[str, object]:
     history = [Turn(role=t.role, text=t.text) for t in case.historico]
     matches = recognizer.find(case.pergunta)
-    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(case.pergunta)]
+    found_terms = recognizer.find_terms(case.pergunta)
     last_matches = []
-    if not matches and not terms and history:
+    if not matches and not found_terms and history:
         last = next((t.text for t in reversed(history) if t.role == "usuario"), "")
         last_matches = recognizer.find(last)
     names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
+    terms = [corpus.rule_term_label(t) for t in terms_outside_techniques(found_terms, names)]
     guardrail_history = [f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text}" for t in history]
     started = time.perf_counter()
     verdict = await guardrail.classify(case.pergunta, guardrail_history, names, terms)
@@ -69,6 +70,8 @@ async def _run_case(
         answer = await answerer.answer(case.pergunta, matches, history)
         folded = _fold(answer.text)
         row["recusou_na_resposta"] = answer.refused
+        # A resposta incompleta ou vazia também conta como recusada, mas é falha, não decisão do modelo.
+        row["resposta_indisponivel"] = answer.text == UNAVAILABLE_MESSAGE
         row["faltando"] = [term for term in case.incluir if _fold(term) not in folded]
         row["cache_read_tokens"] = answer.cache_read_tokens
     return row
@@ -119,6 +122,7 @@ async def test_eval(corpus: Corpus, recognizer: Recognizer) -> None:
         "categoria_exata": sum(r["guardrail"] == r["esperado"] for r in rows) / len(rows),
         "respostas_com_todos_os_termos": sum(not r["faltando"] for r in answered) / max(len(answered), 1),
         "falhas_do_guardrail": sum(bool(r["guardrail_falhou"]) for r in rows),
+        "respostas_indisponiveis": sum(r.get("resposta_indisponivel") is True for r in answered),
         "respostas_sem_cache": sum(r.get("cache_read_tokens") == 0 for r in answered),
         "guardrail_latencia_mediana_s": statistics.median(float(str(r["guardrail_s"])) for r in rows),
     }

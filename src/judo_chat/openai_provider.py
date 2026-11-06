@@ -14,6 +14,7 @@ from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Answer, Turn,
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
 from judo_chat.guardrail import (
+    DECISIONS_CATEGORY_INSTRUCTIONS,
     GUARDRAIL_SYSTEM,
     GuardrailOutput,
     GuardrailResult,
@@ -40,7 +41,7 @@ _GUARDRAIL_SCHEMA = {
 }
 
 # Sem raciocínio, a Decisions API pesa as descrições das opções: elas resumem o
-# GUARDRAIL_SYSTEM. Não cite aqui termos das perguntas de tests/eval/cases.yaml.
+# DECISIONS_CATEGORY_INSTRUCTIONS. Não cite aqui termos das perguntas de tests/eval/cases.yaml.
 _CATEGORY_CHOICES = [
     {
         "value": "tecnica",
@@ -185,7 +186,7 @@ class OpenAIDecisionsGuardrail:
                     {
                         "type": "choice",
                         "name": "categoria",
-                        "instructions": GUARDRAIL_SYSTEM,
+                        "instructions": DECISIONS_CATEGORY_INSTRUCTIONS,
                         "choices": _CATEGORY_CHOICES,
                     },
                     {"type": "predicate", "name": "agressao", "instructions": _HARM_INSTRUCTIONS},
