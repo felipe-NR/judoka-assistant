@@ -7,7 +7,8 @@ from judo_chat.guardrail import Category
 
 class HistoryTurn(BaseModel):
     role: Literal["usuario", "assistente"]
-    text: str = Field(min_length=1, max_length=4000)
+    # Mesmo limite de MAX_TURN_CHARS na página (index.html): evita turnos longos fora do cache.
+    text: str = Field(min_length=1, max_length=1500)
 
 
 class AskRequest(BaseModel):

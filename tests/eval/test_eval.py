@@ -43,7 +43,8 @@ async def _run_case(
         last = next((t.text for t in reversed(history) if t.role == "usuario"), "")
         last_matches = recognizer.find(last)
     names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
-    verdict = await guardrail.classify(case.pergunta, [f"{t.role}: {t.text}" for t in history], names, terms)
+    guardrail_history = [f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text}" for t in history]
+    verdict = await guardrail.classify(case.pergunta, guardrail_history, names, terms)
     if not matches and verdict.continuation:
         matches = last_matches
     row: dict[str, object] = {
