@@ -60,7 +60,7 @@ async def ask(
 
     if not matches and verdict.continuation:
         matches = last_matches
-    answer = await answerer.answer(body.query, matches, history)
+    answer = await answerer.answer(body.query, matches, history, terms)
     groups = [] if answer.refused else video_groups(answer.text, matches, recognizer, corpus)
     for technique_id, intact in fgj_quotes_intact(answer.text, groups, corpus).items():
         logger.info("descrição FGJ %s: %s", "literal" if intact else "PARAFRASEADA", technique_id)

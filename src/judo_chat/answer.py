@@ -227,6 +227,7 @@ def build_user_message(
     corpus: Corpus,
     relations: Relations | None = None,
     history: Sequence[Turn] = (),
+    terms: Sequence[str] = (),
 ) -> str:
     parts = []
     if history:
@@ -287,6 +288,10 @@ def build_user_message(
                     "Guia de pronúncia da FGJ (aplique uma regra por letra, sem misturar as regras de "
                     f"letras diferentes):\n{document.body}"
                 )
+    if terms:
+        # Depois do corte do cache. Sem esta pista, o modelo recusava às vezes um termo da base
+        # quando a pergunta vinha com histórico (avaliação de 2026-11-06).
+        parts.append("Termos da base citados na pergunta: " + ", ".join(terms) + ".")
     return "\n\n".join(parts)
 
 
@@ -410,10 +415,12 @@ class Answerer:
             request["output_config"] = {"effort": self._settings.answer_effort}
         return request
 
-    async def answer(self, query: str, matches: list[Match], history: Sequence[Turn] = ()) -> Answer:
+    async def answer(
+        self, query: str, matches: list[Match], history: Sequence[Turn] = (), terms: Sequence[str] = ()
+    ) -> Answer:
         settings = self._settings
         client = self._client.with_options(timeout=settings.answer_timeout_s)
-        content = build_user_message(query, matches, self._corpus, self._relations, history)
+        content = build_user_message(query, matches, self._corpus, self._relations, history, terms)
         request = self._request(content, settings.answer_max_tokens)
         if settings.use_refusal_fallbacks:
             response = await client.beta.messages.create(

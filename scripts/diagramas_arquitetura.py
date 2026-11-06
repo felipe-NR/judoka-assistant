@@ -183,7 +183,7 @@ def prompt_layers():
         ("02", "Corpus inteiro", "técnicas, nomes populares, regras, história, faixas · ~28 mil tokens", True),
         ("03", "Histórico", "últimas 3 trocas da conversa, tratadas como dado", False),
         ("04", "Pergunta", "texto do usuário, até 1000 caracteres", False),
-        ("05", "Anexos do reconhecedor", "faixas citadas, técnicas, relações, até 6 fichas", False),
+        ("05", "Anexos do reconhecedor", "faixas citadas, técnicas, termos, relações, até 6 fichas", False),
     ]
     b = []
     # Direção (margem esquerda)

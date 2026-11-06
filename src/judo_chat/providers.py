@@ -26,7 +26,9 @@ class GuardrailProvider(Protocol):
 class AnswerProvider(Protocol):
     last_cache_touch: float | None
 
-    async def answer(self, query: str, matches: list[Match], history: Sequence[Turn] = ()) -> Answer: ...
+    async def answer(
+        self, query: str, matches: list[Match], history: Sequence[Turn] = (), terms: Sequence[str] = ()
+    ) -> Answer: ...
 
     async def keep_alive(self) -> tuple[int, int]: ...
 

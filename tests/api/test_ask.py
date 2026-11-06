@@ -34,9 +34,11 @@ class FakeAnswerer:
     def __init__(self, text: str = "resposta") -> None:
         self.text = text
         self.calls: list[tuple[str, list[Match], list[Turn]]] = []
+        self.terms: list[list[str]] = []
 
-    async def answer(self, query: str, matches: list[Match], history: list[Turn]) -> Answer:
+    async def answer(self, query: str, matches: list[Match], history: list[Turn], terms: list[str]) -> Answer:
         self.calls.append((query, matches, list(history)))
+        self.terms.append(list(terms))
         return Answer(self.text, False, 0, 0)
 
 
@@ -90,6 +92,12 @@ def test_term_inside_the_recognized_technique_does_not_reach_the_guardrail(clien
     client.post("/api/perguntar", json={"query": "Sode tsuri komi goshi é perigoso para o ombro?"})
     [(_, _, techniques, terms)] = guardrail.calls
     assert techniques == ["Sode-tsurikomi-goshi"] and terms == []
+
+
+def test_recognized_terms_reach_the_answerer(client: TestClient, answerer: FakeAnswerer) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("regras")
+    client.post("/api/perguntar", json={"query": "o que é sono-mama?"})
+    assert answerer.terms == [['Sono-mama (termo do judô em "Pontuação e duração da luta")']]
 
 
 def test_ambiguous_name_reaches_answerer_with_candidates(client: TestClient, answerer: FakeAnswerer) -> None:
