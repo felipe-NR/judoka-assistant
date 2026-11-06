@@ -19,8 +19,8 @@ from judo_chat.question_rate_limit import QuestionRateLimiter
 
 
 class FakeGuardrail:
-    def __init__(self, category: Category, failed: bool = False) -> None:
-        self.result = GuardrailResult(category=category, reason="teste", failed=failed)
+    def __init__(self, category: Category, failed: bool = False, continuation: bool = False) -> None:
+        self.result = GuardrailResult(category=category, reason="teste", continuation=continuation, failed=failed)
         self.calls: list[tuple[str, list[str], list[str], list[str]]] = []
 
     async def classify(
@@ -154,7 +154,7 @@ def test_video_groups_carry_the_pronunciation(client: TestClient, answerer: Fake
 
 
 def test_follow_up_uses_history(client: TestClient, answerer: FakeAnswerer) -> None:
-    guardrail = FakeGuardrail("tecnica")
+    guardrail = FakeGuardrail("tecnica", continuation=True)
     app.dependency_overrides[get_guardrail] = lambda: guardrail
     history = [
         {"role": "usuario", "text": "contra ataques de uchimata"},
@@ -166,6 +166,37 @@ def test_follow_up_uses_history(client: TestClient, answerer: FakeAnswerer) -> N
     assert [t.role for t in sent_history] == ["usuario", "assistente"]
     [(_, guardrail_history, techniques, _)] = guardrail.calls
     assert techniques == ["Uchi-mata"] and len(guardrail_history) == 2
+
+
+def test_new_term_after_technique_does_not_inherit_previous_technique(
+    client: TestClient, answerer: FakeAnswerer
+) -> None:
+    guardrail = FakeGuardrail("tecnica", continuation=False)
+    app.dependency_overrides[get_guardrail] = lambda: guardrail
+    history = [
+        {"role": "usuario", "text": "Tomoe nage"},
+        {"role": "assistente", "text": "Tomoe-nage (projeção circular)..."},
+    ]
+    body = client.post("/api/perguntar", json={"query": "Ayumi-ashi", "history": history}).json()
+    [(_, matches, _)] = answerer.calls
+    assert matches == []
+    assert body["video_groups"] == []
+    [(_, _, techniques, terms)] = guardrail.calls
+    assert techniques == []
+    assert terms == ['AYUMI-ASHI (termo do judô em "Glossário de termos do judô (FGJ)")']
+
+
+def test_non_continuation_without_terms_drops_previous_technique(client: TestClient, answerer: FakeAnswerer) -> None:
+    guardrail = FakeGuardrail("historia", continuation=False)
+    app.dependency_overrides[get_guardrail] = lambda: guardrail
+    history = [
+        {"role": "usuario", "text": "Tomoe nage"},
+        {"role": "assistente", "text": "Tomoe-nage (projeção circular)..."},
+    ]
+    body = client.post("/api/perguntar", json={"query": "quem criou o judô?", "history": history}).json()
+    [(_, matches, _)] = answerer.calls
+    assert matches == []
+    assert body["video_groups"] == []
 
 
 def test_history_is_limited(client: TestClient) -> None:

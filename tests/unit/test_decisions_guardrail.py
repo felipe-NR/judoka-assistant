@@ -42,9 +42,16 @@ def _instructions(probability: float) -> AnswerAnswerResourcePredicate:
     return AnswerAnswerResourcePredicate(type="predicate", name="instrucoes", probability=probability)
 
 
+def _continuation(probability: float = 0.0) -> AnswerAnswerResourcePredicate:
+    return AnswerAnswerResourcePredicate(type="predicate", name="continuacao", probability=probability)
+
+
 def _decision(*answers: object) -> Decision:
+    items = list(answers)
+    if not any(getattr(a, "name", None) == "continuacao" for a in items):
+        items.append(_continuation(0.0))
     return Decision.model_validate(
-        {"answers": [a.model_dump() for a in answers], "model": "gpt-6-luna", "usage": _USAGE.model_dump()}
+        {"answers": [a.model_dump() for a in items], "model": "gpt-6-luna", "usage": _USAGE.model_dump()}
     )
 
 
@@ -80,14 +87,29 @@ async def test_allows_in_scope_category() -> None:
     probabilities = {"tecnica": 0.9, "historia": 0.02, "regras": 0.05, "fora": 0.03}
     guardrail, client = _guardrail(_decision(_category("tecnica", probabilities), _harm(0.01), _instructions(0.0)))
     result = await guardrail.classify("como faço osoto-gari?", techniques=["Osoto-gari"])
-    assert result.allowed and result.category == "tecnica" and not result.failed
-    assert result.probabilities == {**probabilities, "agressao": 0.01, "instrucoes": 0.0}
+    assert result.allowed and result.category == "tecnica" and not result.failed and not result.continuation
+    assert result.probabilities == {**probabilities, "agressao": 0.01, "instrucoes": 0.0, "continuacao": 0.0}
     [call] = client.decisions.calls
     assert (
         call["input"]
         == "<pergunta>\ncomo faço osoto-gari?\n</pergunta>\n<tecnicas_reconhecidas>Osoto-gari</tecnicas_reconhecidas>"
     )
-    assert [q["name"] for q in call["questions"]] == ["categoria", "agressao", "instrucoes"]  # type: ignore[index, union-attr]
+    assert [q["name"] for q in call["questions"]] == [  # type: ignore[index, union-attr]
+        "categoria",
+        "agressao",
+        "instrucoes",
+        "continuacao",
+    ]
+
+
+async def test_flags_continuation_only_with_history() -> None:
+    probabilities = {"tecnica": 0.9, "historia": 0.02, "regras": 0.05, "fora": 0.03}
+    decision = _decision(_category("tecnica", probabilities), _harm(0.0), _instructions(0.0), _continuation(0.85))
+    guardrail, _ = _guardrail(decision)
+    with_history = await guardrail.classify("e o outro?", history=["Usuário: ashi barai"])
+    without_history = await guardrail.classify("e o outro?")
+    assert with_history.continuation is True
+    assert without_history.continuation is False
 
 
 async def test_logs_token_usage(caplog: pytest.LogCaptureFixture) -> None:

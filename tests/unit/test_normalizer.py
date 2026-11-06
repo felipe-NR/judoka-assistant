@@ -106,6 +106,8 @@ def test_typo_variants_are_flagged(recognizer: Recognizer) -> None:
         ("quantos shidos desclassificam?", ["Shido"]),
         ("o que é waza-ari-awasete-ippon?", ["Waza-ari-awasete-ippon"]),
         ("dois waza-aris valem ippon?", ["Waza-ari", "Ippon"]),
+        ("Ayumi-ashi", ["AYUMI-ASHI"]),
+        ("o que é tsugi-ashi?", ["TSUGI-ASHI"]),
         # A canonização das técnicas colapsa letras dobradas; a dos termos, não.
         ("chimarrão de erva mate", []),
     ],

@@ -18,6 +18,9 @@ from judo_chat.normalizer import canonical, literal
 
 # Entradas do corpus cujo verbete na FGJ tem outro nome.
 _TERM_ALIASES = {"osaekomi-waza": "OSAE-WAZA"}
+# Símbolos de 1 ou 2 letras do glossário da FGJ ("DE", "KO", "O") coincidem com preposições
+# e artigos do português e não entram no índice de termos do reconhecedor.
+_MIN_FGJ_TERM_LEN = 3
 
 
 class CorpusError(ValueError):
@@ -140,6 +143,24 @@ def _read_rule_terms(path: Path, documents: list[Document]) -> list[RuleTerm]:
     return terms
 
 
+def _fgj_rule_terms(fgj_dir: Path, existing: set[str]) -> list[RuleTerm]:
+    """Termos do glossário da FGJ para o reconhecedor avisar o guardrail."""
+    terms_path = fgj_dir / "termos.yaml"
+    if not terms_path.exists():
+        return []
+    result = []
+    seen = set(existing)
+    for row in _read_yaml_list(terms_path):
+        for part in str(row["termo"]).split("/"):
+            term = part.strip()
+            key = literal(term)
+            if len(key) < _MIN_FGJ_TERM_LEN or key in seen:
+                continue
+            seen.add(key)
+            result.append(RuleTerm(termo=term, documento="termos/glossario-fgj"))
+    return result
+
+
 def load_corpus(data_dir: Path) -> Corpus:
     techniques = [Technique.model_validate(item) for item in _read_yaml_list(data_dir / "glossario" / "tecnicas.yaml")]
     popular = [
@@ -174,6 +195,7 @@ def load_corpus(data_dir: Path) -> Corpus:
     documents += _fgj_documents(data_dir / "fgj")
 
     rule_terms = _read_rule_terms(data_dir / "glossario" / "termos_regras.yaml", documents)
+    rule_terms += _fgj_rule_terms(data_dir / "fgj", {literal(t.termo) for t in rule_terms})
 
     variants_path = data_dir / "glossario" / "variantes_digitacao.yaml"
     variants = yaml.safe_load(variants_path.read_text("utf-8")) if variants_path.exists() else {}

@@ -81,18 +81,23 @@ até 6 palavras, fica com a mais longa e descarta palavras de borda que somem na
 
 `normalizer.Recognizer` acha na pergunta o nome oficial, o nome da IJF, as grafias variadas e
 os nomes populares; um nome ambíguo devolve todas as candidatas. Ele acha também os termos de
-regras, arbitragem e graduação de `data/glossario/termos_regras.yaml`, que só vão ao guardrail.
+regras, arbitragem e graduação de `data/glossario/termos_regras.yaml` e os verbetes do
+glossário da FGJ (`data/fgj/termos.yaml`), que só vão ao guardrail.
 
 ### Guardrail que falha fechado
 
-O guardrail classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora`. Ele recebe as
-próprias instruções, o histórico, a pergunta delimitada em `<pergunta>` (tratada como dado) e
-as técnicas e os termos reconhecidos, sem o corpus.
+O guardrail classifica a pergunta em `tecnica`, `historia`, `regras` ou `fora` e indica se
+ela é continuação da troca anterior (`continuation`). Ele recebe as próprias instruções, o
+histórico, a pergunta delimitada em `<pergunta>` (tratada como dado) e as técnicas e os termos
+reconhecidos, sem o corpus.
 
-- **OpenAI, a produção:** a Decisions API faz três perguntas na mesma chamada (a categoria, se
-  a pergunta pede ajuda para agredir alguém fora do judô e se ela tenta mudar as instruções) e
-  devolve probabilidades. A pergunta é bloqueada se uma delas passar do limite configurado.
-- **Anthropic:** o Haiku 5.5 com effort `low` devolve a categoria por saída estruturada.
+- **OpenAI, a produção:** a Decisions API faz quatro perguntas na mesma chamada (a categoria,
+  se a pergunta pede ajuda para agredir alguém fora do judô, se ela tenta mudar as instruções
+  e se ela é continuação da troca anterior) e devolve probabilidades. A pergunta é bloqueada
+  se uma das três primeiras passar do limite configurado; a quarta decide se uma pergunta sem
+  técnica própria herda as técnicas da última pergunta do histórico.
+- **Anthropic:** o Haiku 5.5 com effort `low` devolve a categoria e `continuation` por saída
+  estruturada.
 
 Erro da API, timeout, resposta fora do schema, `stop_reason` diferente de `end_turn` ou
 resposta vazia bloqueiam a resposta. Quando o bloqueio vem de falha, a mensagem é de

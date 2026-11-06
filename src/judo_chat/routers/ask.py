@@ -43,23 +43,26 @@ async def ask(
         )
         for m in matches
     ]
-    if not matches:
-        # "E o outro?": as técnicas vêm da última pergunta do usuário.
+    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(body.query)]
+    last_matches: list = []
+    if not matches and not terms and history:
+        # "E o outro?": o guardrail vê as técnicas da última pergunta para julgar a continuação.
         last_question = next((t.text for t in reversed(history) if t.role == "usuario"), "")
-        matches = recognizer.find(last_question)
+        last_matches = recognizer.find(last_question)
 
-    technique_names = [corpus.technique(tid).name for m in matches for tid in m.technique_ids]
+    technique_names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
     guardrail_history = [
         f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text[:_GUARDRAIL_TURN_CHARS]}"
         for t in history[-_GUARDRAIL_TURNS:]
     ]
-    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(body.query)]
     verdict = await guardrail.classify(body.query, guardrail_history, technique_names, terms)
     if not verdict.allowed:
         # Falha do guardrail também bloqueia a resposta, mas sem dizer que a pergunta saiu do escopo.
         message = UNAVAILABLE_MESSAGE if verdict.failed else REFUSAL_MESSAGE
         return AskResponse(answer=message, category="fora", refused=True, techniques_detected=detected)
 
+    if not matches and verdict.continuation:
+        matches = last_matches
     answer = await answerer.answer(body.query, matches, history)
     groups = [] if answer.refused else video_groups(answer.text, matches, recognizer, corpus)
     for technique_id, intact in fgj_quotes_intact(answer.text, groups, corpus).items():
