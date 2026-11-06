@@ -6,6 +6,7 @@ disparava O-uchi-gari) e não aceitava macron nem grafia separada por sílaba.
 
 import re
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -53,6 +54,14 @@ def canonical(text: str) -> str:
     for old, new in _SUBSTITUTIONS:
         fused = fused.replace(old, new)
     return _DOUBLE.sub(r"\1", fused)
+
+
+def terms_outside_techniques(terms: Sequence[RuleTerm], technique_names: Sequence[str]) -> list[RuleTerm]:
+    """Tira os termos que são só parte de uma técnica reconhecida ("tsurikomi" em
+    Sode-tsurikomi-goshi): como pista extra, eles levaram o guardrail a recusar uma pergunta
+    legítima (caso t14 da avaliação, 2026-11-06)."""
+    names = [canonical(name) for name in technique_names]
+    return [term for term in terms if not any(canonical(term.termo) in name for name in names)]
 
 
 @dataclass(frozen=True)

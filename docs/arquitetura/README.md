@@ -99,6 +99,12 @@ reconhecidos, sem o corpus.
 - **Anthropic:** o Haiku 5.5 com effort `low` devolve a categoria e `continuation` por saída
   estruturada.
 
+Na Decisions API, a pergunta de categoria usa um prompt próprio, sem as regras de injeção e de
+continuação, que têm perguntas separadas. Repetir essas regras na categoria e enviar como termo
+o que já é parte de uma técnica reconhecida levou o guardrail a recusar perguntas legítimas
+(falsa recusa de 1,5% em 2026-11-06), porque esse modelo não raciocina e é sensível ao texto.
+Por isso, um termo contido no nome de uma técnica reconhecida não vai ao guardrail.
+
 Erro da API, timeout, resposta fora do schema, `stop_reason` diferente de `end_turn` ou
 resposta vazia bloqueiam a resposta. Quando o bloqueio vem de falha, a mensagem é de
 indisponibilidade, e não de fora do escopo.

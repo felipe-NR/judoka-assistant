@@ -1,7 +1,7 @@
 import pytest
 
 from judo_chat.corpus.models import Corpus
-from judo_chat.normalizer import Recognizer, canonical
+from judo_chat.normalizer import Recognizer, canonical, terms_outside_techniques
 
 
 def test_every_official_ijf_and_alias_name_resolves(corpus: Corpus, recognizer: Recognizer) -> None:
@@ -114,3 +114,16 @@ def test_typo_variants_are_flagged(recognizer: Recognizer) -> None:
 )
 def test_find_terms(recognizer: Recognizer, query: str, expected: list[str]) -> None:
     assert [term.termo for term in recognizer.find_terms(query)] == expected
+
+
+def test_terms_inside_a_recognized_technique_are_dropped(recognizer: Recognizer) -> None:
+    terms = recognizer.find_terms("Sode tsuri komi goshi é perigoso para o ombro?")
+    assert [t.termo for t in terms] == ["TSURIKOMI"]
+    assert terms_outside_techniques(terms, ["Sode-tsurikomi-goshi"]) == []
+
+
+def test_terms_of_their_own_are_kept(recognizer: Recognizer) -> None:
+    terms = recognizer.find_terms("O que é shido?")
+    assert terms
+    assert terms_outside_techniques(terms, ["Osoto-gari"]) == terms
+    assert terms_outside_techniques(terms, []) == terms

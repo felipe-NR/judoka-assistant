@@ -13,6 +13,7 @@ from openai.types.decision import (
 )
 
 from judo_chat.config import Settings
+from judo_chat.guardrail import DECISIONS_CATEGORY_INSTRUCTIONS
 from judo_chat.openai_provider import OpenAIDecisionsGuardrail
 
 _USAGE = Usage(
@@ -94,6 +95,7 @@ async def test_allows_in_scope_category() -> None:
         call["input"]
         == "<pergunta>\ncomo faço osoto-gari?\n</pergunta>\n<tecnicas_reconhecidas>Osoto-gari</tecnicas_reconhecidas>"
     )
+    assert call["questions"][0]["instructions"] == DECISIONS_CATEGORY_INSTRUCTIONS  # type: ignore[index, call-overload]
     assert [q["name"] for q in call["questions"]] == [  # type: ignore[index, union-attr]
         "categoria",
         "agressao",

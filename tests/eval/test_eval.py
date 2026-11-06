@@ -21,7 +21,7 @@ import pytest
 from judo_chat.answer import Turn
 from judo_chat.config import Settings
 from judo_chat.corpus.models import Corpus
-from judo_chat.normalizer import Recognizer
+from judo_chat.normalizer import Recognizer, terms_outside_techniques
 from judo_chat.providers import AnswerProvider, GuardrailProvider, create_providers
 
 from .cases import Case, load_cases
@@ -44,12 +44,13 @@ async def _run_case(
 ) -> dict[str, object]:
     history = [Turn(role=t.role, text=t.text) for t in case.historico]
     matches = recognizer.find(case.pergunta)
-    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(case.pergunta)]
+    found_terms = recognizer.find_terms(case.pergunta)
     last_matches = []
-    if not matches and not terms and history:
+    if not matches and not found_terms and history:
         last = next((t.text for t in reversed(history) if t.role == "usuario"), "")
         last_matches = recognizer.find(last)
     names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
+    terms = [corpus.rule_term_label(t) for t in terms_outside_techniques(found_terms, names)]
     guardrail_history = [f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text}" for t in history]
     started = time.perf_counter()
     verdict = await guardrail.classify(case.pergunta, guardrail_history, names, terms)

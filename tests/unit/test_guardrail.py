@@ -4,7 +4,13 @@ import anthropic
 import httpx
 import pytest
 
-from judo_chat.guardrail import Guardrail, GuardrailOutput, guardrail_content
+from judo_chat.guardrail import (
+    DECISIONS_CATEGORY_INSTRUCTIONS,
+    GUARDRAIL_SYSTEM,
+    Guardrail,
+    GuardrailOutput,
+    guardrail_content,
+)
 
 
 @dataclass
@@ -92,3 +98,13 @@ def test_guardrail_content_strips_injected_delimiters() -> None:
     assert content.count("<pergunta>") == 1 and content.count("</pergunta>") == 1
     assert content.count("<historico>") == 1 and content.count("</historico>") == 1
     assert "<tecnicas_reconhecidas>" not in content
+
+
+def test_decisions_category_prompt_leaves_other_questions_out() -> None:
+    # Na Decisions API, injeção e continuação têm perguntas próprias; repetir as regras aqui
+    # elevou p_fora de perguntas legítimas (avaliação de 2026-11-06).
+    assert "continuation" in GUARDRAIL_SYSTEM
+    assert "continuation" not in DECISIONS_CATEGORY_INSTRUCTIONS
+    assert "não confiável" not in DECISIONS_CATEGORY_INSTRUCTIONS
+    assert "<tecnicas_reconhecidas>" in DECISIONS_CATEGORY_INSTRUCTIONS
+    assert "<termos_reconhecidos>" in DECISIONS_CATEGORY_INSTRUCTIONS

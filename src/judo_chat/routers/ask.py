@@ -10,6 +10,7 @@ from judo_chat.dependencies import (
     RecognizerDep,
     enforce_question_rate_limit,
 )
+from judo_chat.normalizer import terms_outside_techniques
 from judo_chat.schemas import (
     AskRequest,
     AskResponse,
@@ -39,14 +40,15 @@ async def ask(
         )
         for m in matches
     ]
-    terms = [corpus.rule_term_label(t) for t in recognizer.find_terms(body.query)]
+    found_terms = recognizer.find_terms(body.query)
     last_matches: list = []
-    if not matches and not terms and history:
+    if not matches and not found_terms and history:
         # "E o outro?": o guardrail vê as técnicas da última pergunta para julgar a continuação.
         last_question = next((t.text for t in reversed(history) if t.role == "usuario"), "")
         last_matches = recognizer.find(last_question)
 
     technique_names = [corpus.technique(tid).name for m in (matches or last_matches) for tid in m.technique_ids]
+    terms = [corpus.rule_term_label(t) for t in terms_outside_techniques(found_terms, technique_names)]
     # O guardrail recebe os mesmos turnos completos que o modelo de resposta: nenhum trecho do
     # histórico chega à resposta sem passar antes pela classificação.
     guardrail_history = [f"{'Usuário' if t.role == 'usuario' else 'Assistente'}: {t.text}" for t in history]
