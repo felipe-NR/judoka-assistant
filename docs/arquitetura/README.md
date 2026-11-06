@@ -137,8 +137,14 @@ indisponibilidade e o log registra a categoria. `fallbacks: "default"` (beta
 variadas, nomes populares e ambíguos, conceitos, regras, história, misto e continuação) e 37
 fora (25 temas gerais e 12 adversariais, incluindo injeção via `history`). O reconhecedor
 roda contra todas sem rede, no CI. Guardrail e
-resposta rodam com `pytest -m eval`, com as metas de falso-aceite adversarial igual a 0,
-recusa correta de 95% ou mais e falsa recusa de 5% ou menos.
+resposta rodam com `uv run --env-file .env pytest -m eval`, com as metas de falso-aceite
+adversarial igual a 0, recusa correta de 95% ou mais e falsa recusa de 5% ou menos.
+
+Com a configuração da produção, a avaliação grava `tests/eval/resultado.json` e reescreve as
+linhas de avaliação e de latência da tabela "Números" do README. O `tests/docs`, sem rede,
+falha se esses números, as contagens acima ou o total de técnicas do README divergirem do
+resultado, dos casos ou do corpus, ou se `cases.yaml` mudou depois da última avaliação. Ele não
+detecta mudança de prompt ou de modelo: nesses casos, rode a avaliação de novo no mesmo PR.
 
 ### O que não passa pelo modelo
 

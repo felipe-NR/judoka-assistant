@@ -31,10 +31,11 @@ RAG com busca híbrida e RAG agentic) e fiquei com a primeira, o CAG. A compara�
 
 1. O reconhecedor acha na pergunta os nomes de técnica (oficial, da IJF, grafias variadas e
    nomes populares) e os termos de regras, sem chamar modelo.
-2. O guardrail classifica a pergunta em técnica, história, regras ou fora do escopo. Qualquer
-   erro bloqueia a resposta.
+2. O guardrail classifica a pergunta em técnica, história, regras ou fora do escopo e indica se
+   ela continua a troca anterior. Qualquer erro bloqueia a resposta.
 3. O modelo de resposta recebe o corpus inteiro num prefixo em cache (CAG) e, depois do corte
-   do cache, o histórico, a pergunta e as fichas das técnicas reconhecidas.
+   do cache, o histórico, a pergunta e as fichas das técnicas reconhecidas. Uma pergunta sem
+   técnica própria só herda as da pergunta anterior quando o guardrail indica continuação.
 4. Vídeos, kanji e pronúncia saem dos dados, sem modelo.
 
 Os quatro diagramas e os componentes estão em [`docs/arquitetura/`](docs/arquitetura/README.md).
@@ -43,9 +44,9 @@ Os quatro diagramas e os componentes estão em [`docs/arquitetura/`](docs/arquit
 
 | Medida | Resultado |
 |-|-|
-| Avaliação com 164 perguntas (2026-10-23) | 0 falso-aceite adversarial, 100% de recusa correta, 0% de falsa recusa |
+| Avaliação com 167 perguntas (2026-11-06) | 0 falso-aceite adversarial, 100% de recusa correta, 1,5% de falsa recusa |
 | Custo por pergunta na produção (2026-10-28) | ~US$ 0,0004 com o cache quente; ~US$ 0,007 quando grava o prefixo |
-| Latência do guardrail | ~0,4 s de mediana pela Decisions API, contra ~4 s antes |
+| Latência do guardrail | ~0,3 s de mediana pela Decisions API (2026-11-06), contra ~4 s antes |
 | Corpus no prompt | ~28 mil tokens: 104 técnicas, nomes populares, regras, história e faixas |
 
 ## Decisões de engenharia
@@ -91,9 +92,9 @@ A página de chat fica em http://localhost:8000 e a API em `POST /api/perguntar`
 ## Testes
 
 ```bash
-uv run pytest            # sem rede: reconhecedor, corpus, guardrail com fakes, API
+uv run pytest            # sem rede: reconhecedor, corpus, guardrail com fakes, API, números dos docs
 uv run pytest --cov      # o mesmo, com cobertura; falha abaixo do piso do pyproject.toml
-uv run pytest -m eval    # chama a API de verdade (custa dinheiro) e grava tests/eval/report.json
+uv run --env-file .env pytest -m eval   # chama a API de verdade (custa dinheiro) e atualiza a tabela "Números"
 uv run ruff check . && uv run ruff format --check .
 ```
 

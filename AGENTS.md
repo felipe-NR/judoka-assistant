@@ -26,6 +26,15 @@ Toda mudança no fluxo de deploy (workflows, `deploy/`, configuração da VM, da
 secrets) atualiza o `docs/operacao/deploy.md` e este arquivo no mesmo PR. Isso inclui trocar o
 runner, fixo em `ubuntu-24.04`, ou a versão de uma action.
 
+## Avaliação
+
+O `uv run --env-file .env pytest -m eval` gasta crédito e, com a configuração da produção, grava
+`tests/eval/resultado.json` e atualiza a tabela "Números" do README. Mudança em
+`tests/eval/cases.yaml`, nos prompts ou nos modelos roda a avaliação de novo e versiona o
+resultado no mesmo PR. O `docs.yml` roda o `tests/docs` em PR, sem rede, e aponta números
+desalinhados; ele fica fora do deploy para não travar a produção e não detecta mudança de prompt
+ou de modelo.
+
 ## Arquitetura
 
 Os diagramas de `docs/arquitetura/` mostram o prompt e o corte do cache, o caminho de uma
