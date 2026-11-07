@@ -12,6 +12,20 @@ def test_chat_page_is_served_only_when_mounted() -> None:
     assert TestClient(with_page).get("/").status_code == 200
 
 
+def test_page_declares_the_link_preview_image() -> None:
+    # O WhatsApp não mostra a prévia sem og:image, e a URL precisa ser absoluta.
+    app = FastAPI()
+    mount_chat_page(app)
+    client = TestClient(app)
+
+    page = client.get("/").text
+    url = "https://felipe-nr.github.io/judoka-assistant/"
+    assert f'property="og:url" content="{url}"' in page
+    image = f"{url}icon-512.png"
+    assert f'property="og:image" content="{image}"' in page
+    assert client.get(image.removeprefix(url)).status_code == 200
+
+
 def test_pwa_files_are_served_and_consistent() -> None:
     # O manifest, o service worker e os ícones saem da mesma pasta da página
     # (docs/decisoes/0002-disponibilizar-como-pwa.md).
