@@ -154,6 +154,13 @@ def test_videos_follow_the_techniques_presented_in_the_answer(client: TestClient
     assert all(g["videos"][0]["kodokan"] for g in body["video_groups"])
 
 
+def test_combination_answer_only_brings_the_videos_of_the_question(client: TestClient, answerer: FakeAnswerer) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
+    answerer.text = "- **Osoto-gari** (ceifa exterior maior): 1.ª série.\n- **Seoi-nage**: 1.ª série."
+    body = client.post("/api/perguntar", json={"query": "Com que golpe combino o ouchi gari?"}).json()
+    assert [g["technique"] for g in body["video_groups"]] == ["Ouchi-gari"]
+
+
 def test_video_groups_carry_the_fgj_kanji(client: TestClient, answerer: FakeAnswerer) -> None:
     app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
     answerer.text = "### Seoi-nage\nTexto."

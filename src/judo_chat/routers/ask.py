@@ -2,7 +2,14 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from judo_chat.answer import REFUSAL_MESSAGE, UNAVAILABLE_MESSAGE, Turn, fgj_quotes_intact, video_groups
+from judo_chat.answer import (
+    REFUSAL_MESSAGE,
+    UNAVAILABLE_MESSAGE,
+    Turn,
+    detect_intents,
+    fgj_quotes_intact,
+    video_groups,
+)
 from judo_chat.dependencies import (
     AnswererDep,
     CorpusDep,
@@ -61,9 +68,12 @@ async def ask(
     if not matches and verdict.continuation:
         matches = last_matches
     answer = await answerer.answer(body.query, matches, history, terms)
-    groups = [] if answer.refused else video_groups(answer.text, matches, recognizer, corpus)
-    for technique_id, intact in fgj_quotes_intact(answer.text, groups, corpus).items():
-        logger.info("descrição FGJ %s: %s", "literal" if intact else "PARAFRASEADA", technique_id)
+    # A lista curta de combinações não traz fichas nem os vídeos de cada golpe (2026-11-06).
+    short_list = detect_intents(body.query) == ["combinacao"]
+    groups = [] if answer.refused else video_groups(answer.text, matches, recognizer, corpus, only_question=short_list)
+    if not short_list:
+        for technique_id, intact in fgj_quotes_intact(answer.text, groups, corpus).items():
+            logger.info("descrição FGJ %s: %s", "literal" if intact else "PARAFRASEADA", technique_id)
     return AskResponse(
         answer=answer.text,
         category="fora" if answer.refused else verdict.category,

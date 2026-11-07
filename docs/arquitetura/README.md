@@ -157,16 +157,18 @@ detecta mudança de prompt ou de modelo: nesses casos, rode a avaliação de nov
 ### O que não passa pelo modelo
 
 - **Vídeos:** depois da resposta, o reconhecedor acha as técnicas apresentadas (títulos e
-  itens) e a API devolve os vídeos em `video_groups`, com o do Kodokan primeiro. A página os
-  põe embaixo da seção de cada técnica.
+  itens) e a API devolve os vídeos em `video_groups`: o do Kodokan ou, só quando ele não existe,
+  o de outra fonte. A página os põe embaixo da seção de cada técnica e, no segundo caso, avisa
+  que a base não tem o vídeo do Kodokan mapeado.
 - **Kanji e pronúncia:** cada grupo de `video_groups` traz o kanji da ficha da FGJ e a
   pronúncia gerada por `pronunciation.py` com as regras de `data/fgj/pronuncia.yaml`, sem
   marcar a tônica. A página mostra a pronúncia acima dos vídeos; o kanji vai numa coluna ao
   lado quando a resposta apresenta uma técnica, e junto dos vídeos de cada uma quando são várias.
 - **Relações:** `relations.py` liga contragolpes, variações e combinações a partir dos textos
   da FGJ, dos nomes ("X-gaeshi", "Kuzure-X") e das séries do Projeto Budô. Perguntas sobre
-  contragolpes, variações ou combinações levam as fichas das técnicas relacionadas e, quando a
-  relação vem de uma série, o número dela.
+  contragolpes ou variações levam as fichas das técnicas relacionadas. Quando a relação vem de
+  uma série, leva também o número dela. Perguntas só sobre combinações respondem em lista curta,
+  sem fichas e só com os vídeos da técnica perguntada.
 - **Conversa:** a página envia as últimas 3 trocas em `history`; o servidor não guarda
   estado. O histórico vai ao modelo como dado, depois do trecho cacheado. A página guarda as
   últimas 20 mensagens no `localStorage` do aparelho e as mostra de novo ao reabrir; só o botão
