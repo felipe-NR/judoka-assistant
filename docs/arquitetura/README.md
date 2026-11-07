@@ -165,7 +165,8 @@ detecta mudança de prompt ou de modelo: nesses casos, rode a avaliação de nov
   lado quando a resposta apresenta uma técnica, e junto dos vídeos de cada uma quando são várias.
 - **Relações:** `relations.py` liga contragolpes, variações e combinações a partir dos textos
   da FGJ, dos nomes ("X-gaeshi", "Kuzure-X") e das séries do Projeto Budô. Perguntas sobre
-  contragolpes, variações ou combinações levam as fichas das técnicas relacionadas.
+  contragolpes, variações ou combinações levam as fichas das técnicas relacionadas e, quando a
+  relação vem de uma série, o número dela.
 - **Conversa:** a página envia as últimas 3 trocas em `history`; o servidor não guarda
   estado. O histórico vai ao modelo como dado, depois do trecho cacheado. A página guarda as
   últimas 20 mensagens no `localStorage` do aparelho e as mostra de novo ao reabrir; só o botão
