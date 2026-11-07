@@ -17,6 +17,9 @@ e o passo falha se a troca não acontecer. Cada publicação cria um cache novo 
 apaga o anterior. O `config.js` fica fora desse cache, então trocar `JUDO_CHAT_API_URL` vale na
 próxima abertura da página, mesmo no app instalado.
 
+As tags Open Graph do `index.html`, que geram a prévia do link no WhatsApp, usam a URL completa da
+página. Se o endereço do Pages mudar, elas mudam junto.
+
 Em produção a API roda numa VM E2.1.Micro Always Free da OCI, separada da VM do ai-memory,
 como serviço systemd (`deploy/judoka-api.service`) ouvindo só em `127.0.0.1:8010`. O acesso
 público entra pelo Tailscale Funnel, que dá HTTPS sem abrir porta na OCI. Para instalar ou
