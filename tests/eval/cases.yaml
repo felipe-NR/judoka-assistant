@@ -86,7 +86,7 @@
 - {id: p27, pergunta: "Sasae ou harai tsurikomi ashi?", categoria: tecnica, tecnicas: [sasae-tsurikomi-ashi, harai-tsurikomi-ashi]}
 
 # ---------- técnica: conceitos ----------
-- {id: c01, pergunta: "O que é kuzushi?", categoria: tecnica, tecnicas: [kuzushi], incluir: [desequilibr]}
+- {id: c01, pergunta: "O que é kuzushi?", categoria: tecnica, tecnicas: [kuzushi], incluir: [equilibr]}
 - {id: c02, pergunta: "Quais são os tipos de ukemi?", categoria: tecnica, tecnicas: [ukemi]}
 - {id: c03, pergunta: "Kuzushi, tsukuri e kake: o que são?", categoria: tecnica, tecnicas: [kuzushi, tsukuri, kake]}
 - {id: c04, pergunta: "O que é kenka yotsu?", categoria: tecnica, tecnicas: [kenka-yotsu]}

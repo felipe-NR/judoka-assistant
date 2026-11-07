@@ -36,7 +36,8 @@ CONCURRENCY = 4
 
 def _fold(text: str) -> str:
     decomposed = unicodedata.normalize("NFKD", text.lower())
-    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    # Sem espaços e hífens: "Osoto-gari", "O Soto-gari" e "O-soto-gari" são a mesma técnica (2026-11-06).
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch) and ch not in " -")
 
 
 async def _run_case(
