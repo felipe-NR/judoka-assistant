@@ -152,16 +152,25 @@ def test_video_groups_anchor_the_presented_techniques(corpus: Corpus, recognizer
     assert all(g.videos[0].kodokan for g in groups)
 
 
-def test_counter_question_attaches_related_sheets(corpus: Corpus, recognizer: Recognizer) -> None:
+def test_counter_question_attaches_relations_without_sheets(corpus: Corpus, recognizer: Recognizer) -> None:
     from judo_chat.relations import Relations
 
+    # As fichas deixavam a resposta com 1.290 caracteres no Uchi-mata (2026-11-07).
     query = "liste os contra ataques de uchimata"
     message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
     assert "Relações da base para o Uchi-mata:" in message
     assert "- Uchi-mata-gaeshi: contragolpe do Uchi-mata (fonte: FGJ, pelo nome)" in message
     assert "- Tai-otoshi: contragolpe do Uchi-mata (fonte: 3.ª série de kaeshi-waza)" in message
-    for name in ("[Uchi-mata-gaeshi]", "[Uchi-mata-sukashi]", "[Tai-otoshi]"):
-        assert name in message
+    assert "Fichas das técnicas citadas" not in message
+
+
+def test_variation_question_keeps_the_sheets(corpus: Corpus, recognizer: Recognizer) -> None:
+    from judo_chat.relations import Relations
+
+    query = "quais as variações do kesa gatame?"
+    message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
+    assert "Relações da base para o Kesa-gatame:" in message
+    assert "Fichas das técnicas citadas" in message
 
 
 def test_combination_question_attaches_the_series_number(corpus: Corpus, recognizer: Recognizer) -> None:
@@ -178,12 +187,12 @@ def test_combination_question_attaches_the_series_number(corpus: Corpus, recogni
     assert "Fichas das técnicas citadas" not in message
 
 
-def test_combination_and_counter_question_keeps_the_sheets(corpus: Corpus, recognizer: Recognizer) -> None:
+def test_combination_and_counter_question_is_a_short_list(corpus: Corpus, recognizer: Recognizer) -> None:
     from judo_chat.relations import Relations
 
     query = "quais combinações e contragolpes do uchi mata?"
     message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
-    assert "Fichas das técnicas citadas" in message
+    assert "Fichas das técnicas citadas" not in message
 
 
 def test_history_goes_as_data_before_the_question(corpus: Corpus) -> None:

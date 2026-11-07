@@ -5,7 +5,8 @@ Fontes:
 - CSV do judo-techniques-bot: grafias, nomes em inglês e vídeos;
 - docs/glossario/judobase_tag_mapping.csv: nomes, códigos e classes da IJF;
 - docs/fontes/fecju_kodokan_videos.csv: vídeos do canal do Kodokan listados pela FECJU
-  (https://www.fecju.com.br/o-judo), casados pela técnica que o título do vídeo indica.
+  (https://www.fecju.com.br/o-judo), casados pela técnica que o título do vídeo indica,
+  mais os de KODOKAN_EXTRA, que faltam nessa lista.
 
 O script falha quando uma grafia do CSV não é variante do nome oficial nem consta de
 nomes_populares.yaml, ou quando uma linha de alguma fonte fica sem destino.
@@ -29,6 +30,12 @@ KODOKAN_CSV = ROOT / "docs" / "fontes" / "fecju_kodokan_videos.csv"
 CURADORIA = ROOT / "data" / "curadoria"
 POPULARES = ROOT / "data" / "glossario" / "nomes_populares.yaml"
 OUTPUT = ROOT / "data" / "glossario" / "tecnicas.yaml"
+# Vídeos do canal do Kodokan que faltam na lista da FECJU: lá o Sasae-tsurikomi-ashi não tem
+# vídeo e o link do Osoto-guruma aponta para o O-guruma. Os links vieram do usuário (PR #49).
+KODOKAN_EXTRA = [
+    {"canal": "KODOKAN", "titulo_video": "大外車 / O-soto-guruma", "url": "https://youtu.be/92KbCm6pQeI"},
+    {"canal": "KODOKAN", "titulo_video": "支釣込足 / Sasae-tsurikomi-ashi", "url": "https://youtu.be/699i--pvYmE"},
+]
 
 _CURATION_KEYS = {
     "id", "name", "csv", "kind", "group", "status", "ijf_name", "name_pt_br", "description_pt_br",
@@ -59,7 +66,7 @@ def _attach_kodokan_videos(output: list[dict[str, object]]) -> list[str]:
             if name:
                 index.setdefault(canonical(str(name)), item)
     errors = []
-    for row in csv.DictReader(KODOKAN_CSV.open(encoding="utf-8")):
+    for row in [*csv.DictReader(KODOKAN_CSV.open(encoding="utf-8")), *KODOKAN_EXTRA]:
         if row["canal"] != "KODOKAN":
             continue
         romaji = row["titulo_video"].split("/")[-1]

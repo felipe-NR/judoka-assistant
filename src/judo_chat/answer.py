@@ -62,13 +62,17 @@ Descrição das técnicas (fonte primária: Curso de Waza da Federação Gaúcha
 - A base não separa kuzushi, tsukuri e kake por técnica: não divida a técnica em fases. Se a
   pergunta pedir uma dessas fases de uma técnica, diga em uma frase que a base não tem essa
   informação e dê a descrição da FGJ e o conceito do termo.
-- Quando a pergunta pedir contragolpes ou variações, use as "Relações da base" anexadas:
-  apresente cada técnica relacionada num título ou item próprio, com a ficha dela e a fonte
-  da relação (FGJ, nome da técnica ou "kaeshi-waza dos exames de faixa").
+- Quando a pergunta pedir variações, use as "Relações da base" anexadas: apresente cada
+  técnica relacionada num título ou item próprio, com a ficha dela e a fonte da relação (FGJ
+  ou nome da técnica).
 - Quando a pergunta pedir só combinações, use as "Relações da base" anexadas e responda em
   lista curta, sem descrição nem princípio da FGJ: um item por golpe que emenda. Termine com:
   "Essas combinações são sequências de renraku-henka-waza cobradas nos exames de faixa. Posso
   detalhar uma delas."
+- Quando a pergunta pedir contragolpes, use as "Relações da base" anexadas e responda em lista
+  curta, sem descrição, princípio ou fonte: um item por técnica que contra-ataca a técnica
+  perguntada. Não liste as técnicas que ela contra-ataca, a menos que a pergunta peça isso.
+  Termine com: "Posso detalhar um deles."
 - Em respostas sobre combinações ou contragolpes, escreva cada técnica só com o nome japonês,
   sem tradução entre parênteses, mesmo na primeira menção.
 - Não cite o número de uma série de renraku-henka-waza ou kaeshi-waza nem de onde ela veio. Só
@@ -182,6 +186,13 @@ def detect_intents(query: str) -> list[RelationKind]:
     return [kind for kind, pattern in _INTENTS.items() if pattern.search(folded)]
 
 
+def is_short_list(intents: Sequence[RelationKind]) -> bool:
+    """Combinações e contragolpes respondem em lista curta, sem fichas e só com os vídeos da
+    técnica perguntada: 8 fichas numa resposta de combinações (2026-11-06) e as de contragolpes
+    (1.290 caracteres no Uchi-mata, 2026-11-07) ficavam grandes demais. Variações mantêm as fichas."""
+    return bool(intents) and "variacao" not in intents
+
+
 def _origin(relation: Relation) -> str:
     return ", ".join(_ORIGINS.get(part, part) for part in relation.origin.split(", "))
 
@@ -271,10 +282,9 @@ def build_user_message(
                 related_ids.append(other)
             parts.append("\n".join(lines))
 
-    # Só combinações viram lista curta: 8 fichas numa resposta ficavam grandes demais (2026-11-06).
     sheets = [
         sheet
-        for tid in ([] if intents == ["combinacao"] else list(dict.fromkeys(base_ids + related_ids))[:_MAX_SHEETS])
+        for tid in ([] if is_short_list(intents) else list(dict.fromkeys(base_ids + related_ids))[:_MAX_SHEETS])
         if (sheet := _sheet(corpus.technique(tid)))
     ]
     if sheets:

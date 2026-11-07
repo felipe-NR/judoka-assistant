@@ -17,8 +17,9 @@ forma errada há anos ("ashi barai", "morote seoi-nage", "mata-leão"), e as fon
 técnicas, como a API da IJF e as listas de vídeos, não trazem texto em português. O assistente
 responde em pt-BR a partir do Curso de Waza da Federação Gaúcha de Judô (FGJ), usa o nome
 oficial do Kodokan e avisa quando a pergunta usou um nome popular. Diante de um nome ambíguo,
-ele apresenta as técnicas candidatas em vez de escolher uma em silêncio. Cada técnica citada
-vem com o vídeo do Kodokan, o kanji e a pronúncia.
+ele apresenta as técnicas candidatas em vez de escolher uma em silêncio. Cada técnica
+apresentada vem com o kanji, a pronúncia e o vídeo do Kodokan, ou o de outra fonte, com aviso,
+quando a base não tem o do Kodokan.
 
 Como projeto de portfólio, comparei três abordagens (o corpus inteiro no contexto com cache,
 RAG com busca híbrida e RAG agentic) e fiquei com a primeira, o CAG. A comparação está em
@@ -34,8 +35,10 @@ RAG com busca híbrida e RAG agentic) e fiquei com a primeira, o CAG. A compara�
 2. O guardrail classifica a pergunta em técnica, história, regras ou fora do escopo e indica se
    ela continua a troca anterior. Qualquer erro bloqueia a resposta.
 3. O modelo de resposta recebe o corpus inteiro num prefixo em cache (CAG) e, depois do corte
-   do cache, o histórico, a pergunta e as fichas das técnicas reconhecidas. Uma pergunta sem
-   técnica própria só herda as da pergunta anterior quando o guardrail indica continuação.
+   do cache, o histórico, a pergunta, as fichas das técnicas reconhecidas e as relações entre
+   técnicas (contragolpes, variações e combinações). Combinações e contragolpes saem em lista
+   curta, sem fichas. Uma pergunta sem técnica própria só herda as da pergunta anterior quando o
+   guardrail indica continuação.
 4. Vídeos, kanji e pronúncia saem dos dados, sem modelo.
 
 Os quatro diagramas e os componentes estão em [`docs/arquitetura/`](docs/arquitetura/README.md).

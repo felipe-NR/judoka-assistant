@@ -146,8 +146,8 @@ def test_page_and_config_are_served(client: TestClient) -> None:
 
 def test_videos_follow_the_techniques_presented_in_the_answer(client: TestClient, answerer: FakeAnswerer) -> None:
     app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
-    answerer.text = "Contragolpes:\n1. **Uchi-mata-gaeshi**: texto\n2. **Uchi-mata-sukashi**: texto"
-    body = client.post("/api/perguntar", json={"query": "contra ataques de uchimata"}).json()
+    answerer.text = "Variações:\n1. **Uchi-mata-gaeshi**: texto\n2. **Uchi-mata-sukashi**: texto"
+    body = client.post("/api/perguntar", json={"query": "variações de uchimata"}).json()
     groups = [(g["technique"], g["anchor"]) for g in body["video_groups"]]
     assert groups[:2] == [("Uchi-mata-gaeshi", "Uchi-mata-gaeshi"), ("Uchi-mata-sukashi", "Uchi-mata-sukashi")]
     assert ("Uchi-mata", None) in groups
@@ -159,6 +159,13 @@ def test_combination_answer_only_brings_the_videos_of_the_question(client: TestC
     answerer.text = "- **Osoto-gari** (ceifa exterior maior): 1.ª série.\n- **Seoi-nage**: 1.ª série."
     body = client.post("/api/perguntar", json={"query": "Com que golpe combino o ouchi gari?"}).json()
     assert [g["technique"] for g in body["video_groups"]] == ["Ouchi-gari"]
+
+
+def test_counter_answer_only_brings_the_videos_of_the_question(client: TestClient, answerer: FakeAnswerer) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
+    answerer.text = "- Tai-otoshi\n- Uchi-mata-gaeshi\n- Uchi-mata-sukashi\n\nPosso detalhar um deles."
+    body = client.post("/api/perguntar", json={"query": "Quais os contragolpes do uchi mata?"}).json()
+    assert [g["technique"] for g in body["video_groups"]] == ["Uchi-mata"]
 
 
 def test_video_groups_carry_the_missing_kodokan_flag(client: TestClient, answerer: FakeAnswerer) -> None:
