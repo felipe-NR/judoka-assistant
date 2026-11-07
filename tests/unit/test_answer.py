@@ -45,15 +45,20 @@ def test_user_message_carries_the_fgj_sheet(corpus: Corpus, recognizer: Recogniz
     assert "youtu" not in message
 
 
-def test_user_message_carries_the_phases(corpus: Corpus, recognizer: Recognizer) -> None:
-    query = "Como se faz o tai otoshi?"
-    message = build_user_message(query, recognizer.find(query), corpus)
+def test_user_message_carries_the_phases_only_when_asked(corpus: Corpus, recognizer: Recognizer) -> None:
     phases = corpus.technique("tai-otoshi").phases
     assert phases is not None
-    assert f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"' in message
-    assert f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"' in message
+    query = "Como se faz o tai otoshi?"
+    assert "Tagusari" not in build_user_message(query, recognizer.find(query), corpus)
+    for query in ("Qual o kuzushi do tai otoshi?", "Quais as fases do tai otoshi?"):
+        message = build_user_message(query, recognizer.find(query), corpus)
+        assert f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"' in message
+        assert f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"' in message
     # Sem fonte, o modelo não monta as fases sozinho.
-    assert "não divida a técnica em fases" in build_system_text(corpus)
+    instructions = " ".join(build_system_text(corpus).split())
+    assert "não divida a técnica em fases" in instructions
+    # O artigo é CC BY 4.0: as fases saem sempre com a citação.
+    assert "sempre com o rótulo **Kuzushi, tsukuri e kake (Tagusari, Santos e Tani, 2016):**" in instructions
 
 
 def test_user_message_carries_pronunciation_guide(corpus: Corpus) -> None:
@@ -223,6 +228,16 @@ def test_video_groups_only_use_another_source_without_the_kodokan_video(corpus: 
     groups = video_groups("Osoto-gari e Yagura-nage", [], recognizer, corpus)
     videos = {g.technique: [v.kodokan for v in g.videos] for g in groups}
     assert videos == {"Osoto-gari": [True], "Yagura-nage": [False]}
+
+
+def test_video_groups_flag_the_missing_kodokan_video_only_for_techniques(
+    corpus: Corpus, recognizer: Recognizer
+) -> None:
+    from judo_chat.answer import video_groups
+
+    groups = video_groups("Osoto-gari e Yagura-nage", recognizer.find("o que é te-waza?"), recognizer, corpus)
+    missing = {g.technique: g.kodokan_missing for g in groups}
+    assert missing == {"Te-waza": False, "Osoto-gari": False, "Yagura-nage": True}
 
 
 def test_video_groups_cover_every_presented_technique(corpus: Corpus, recognizer: Recognizer) -> None:

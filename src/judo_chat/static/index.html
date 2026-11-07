@@ -267,10 +267,10 @@
     return a;
   }
 
-  // Vídeos da técnica e, quando nenhum é do Kodokan, o aviso de que a base não tem esse mapeado.
+  // Vídeos da técnica e, quando a API indica, o aviso de que a base não tem o do Kodokan mapeado.
   function appendVideos(box, group) {
     for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
-    if (group.videos.some((video) => video.kodokan)) return;
+    if (!group.kodokan_missing) return;
     const note = document.createElement("p");
     note.className = "video-note";
     note.textContent = `A base não tem o vídeo do Kodokan mapeado para ${group.technique}.`;

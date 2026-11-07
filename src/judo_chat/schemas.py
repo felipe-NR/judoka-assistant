@@ -46,6 +46,8 @@ class VideoGroupOut(BaseModel):
     kanji: str | None = None
     # Pronúncia pelas regras da FGJ ("SSEOI NAGUE"), sem marcar a tônica (2026-10-28).
     pronunciation: str | None = None
+    # Técnica sem vídeo do Kodokan na base: a página avisa. Categorias e conceitos não (2026-11-06).
+    kodokan_missing: bool = False
 
 
 class AskResponse(BaseModel):
