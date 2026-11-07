@@ -45,20 +45,13 @@ def test_user_message_carries_the_fgj_sheet(corpus: Corpus, recognizer: Recogniz
     assert "youtu" not in message
 
 
-def test_user_message_carries_the_phases_only_when_asked(corpus: Corpus, recognizer: Recognizer) -> None:
-    phases = corpus.technique("tai-otoshi").phases
-    assert phases is not None
-    query = "Como se faz o tai otoshi?"
+def test_phases_are_not_in_the_prompt(corpus: Corpus, recognizer: Recognizer) -> None:
+    # As fases de Tagusari saíram da base em 2026-11-07: sem fonte, o modelo não as monta sozinho.
+    query = "Qual o kuzushi do tai otoshi?"
     assert "Tagusari" not in build_user_message(query, recognizer.find(query), corpus)
-    for query in ("Qual o kuzushi do tai otoshi?", "Quais as fases do tai otoshi?"):
-        message = build_user_message(query, recognizer.find(query), corpus)
-        assert f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"' in message
-        assert f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"' in message
-    # Sem fonte, o modelo não monta as fases sozinho.
     instructions = " ".join(build_system_text(corpus).split())
+    assert "Tagusari" not in instructions
     assert "não divida a técnica em fases" in instructions
-    # O artigo é CC BY 4.0: as fases saem sempre com a citação.
-    assert "sempre com o rótulo **Kuzushi, tsukuri e kake (Tagusari, Santos e Tani, 2016):**" in instructions
 
 
 def test_user_message_carries_pronunciation_guide(corpus: Corpus) -> None:

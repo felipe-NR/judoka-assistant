@@ -25,9 +25,8 @@ trechos dos protótipos:
 
 Até 2026-10-28 o texto de Técnicas era "Kuzushi, tsukuri e kake de cada técnica", tirado dos
 passos da resposta do seoi-nage. Os protótipos escreveram esses passos à mão, e a resposta não
-tinha como cumprir a frase. A base tem as três fases só das seis te-waza do gokyo
-(`data/fases/tagusari_2016.yaml`); a fonte que falta para as outras está em
-`docs/validacoes-externas.md`, seção "Kuzushi, tsukuri e kake por técnica".
+tinha como cumprir a frase. A base não tem as três fases por técnica; o histórico e as fontes
+candidatas estão em `docs/validacoes-externas.md`, seção "Kuzushi, tsukuri e kake por técnica".
 
 ## Decisão: abertura com perguntas sugeridas (2026-10-23)
 

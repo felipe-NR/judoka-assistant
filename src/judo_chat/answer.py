@@ -59,12 +59,9 @@ Descrição das técnicas (fonte primária: Curso de Waza da Federação Gaúcha
 - Todo texto copiado da FGJ sai com o rótulo da fonte, em cada técnica da resposta:
   **Descrição Kodokan (FGJ):** "..." e **Princípio (FGJ):** "...". Quando a técnica não tem
   texto da FGJ, não cite fonte.
-- Use as linhas Kuzushi, Tsukuri e Kake (Tagusari 2016) só quando a pergunta citar kuzushi,
-  tsukuri, kake ou as fases de uma técnica que as tenha: apresente as três fases depois da
-  descrição da FGJ, uma por item, sem alterar o texto, sempre com o rótulo **Kuzushi, tsukuri e
-  kake (Tagusari, Santos e Tani, 2016):** e o aviso de que o artigo descreve a forma do kata,
-  mesmo que a pergunta cite uma só fase. Esse texto nunca leva o rótulo (FGJ). Fora disso, não
-  mencione essas linhas nem o artigo e não divida a técnica em fases.
+- A base não separa kuzushi, tsukuri e kake por técnica: não divida a técnica em fases. Se a
+  pergunta pedir uma dessas fases de uma técnica, diga em uma frase que a base não tem essa
+  informação e dê a descrição da FGJ e o conceito do termo.
 - Quando a pergunta pedir contragolpes ou variações, use as "Relações da base" anexadas:
   apresente cada técnica relacionada num título ou item próprio, com a ficha dela e a fonte
   da relação (FGJ, nome da técnica ou "kaeshi-waza dos exames de faixa").
@@ -172,7 +169,6 @@ _ORIGINS = {
     "nome": "pelo nome",
 }
 _PRONUNCIATION = re.compile(r"\bpron\S*nci")
-_PHASES = re.compile(r"\b(kuzushi|tsukuri|kake|fases?)\b")
 _MAX_SHEETS = 6
 
 
@@ -207,7 +203,7 @@ def _describe(relation: Relation, technique_id: str, corpus: Corpus) -> tuple[st
     return relation.source, f"- {source} seguido de {target}: combinação (fonte: {origin})"
 
 
-def _sheet(technique: Technique, with_phases: bool) -> str | None:
+def _sheet(technique: Technique) -> str | None:
     lines = [f"[{technique.name}]"]
     if technique.fgj:
         lines += [
@@ -222,12 +218,6 @@ def _sheet(technique: Technique, with_phases: bool) -> str | None:
             lines.append(f'Conceito (FGJ): "{technique.fgj_term.conceito}"')
     elif technique.description_pt_br:
         lines.append(f"Descrição (redigida para esta base, não é da FGJ): {technique.description_pt_br}")
-    if with_phases and (phases := technique.phases):
-        lines += [
-            f'Kuzushi (Tagusari 2016): "{phases.kuzushi}"',
-            f'Tsukuri (Tagusari 2016): "{phases.tsukuri}"',
-            f'Kake (Tagusari 2016): "{phases.kake}"',
-        ]
     return "\n".join(lines) if len(lines) > 1 else None
 
 
@@ -281,13 +271,11 @@ def build_user_message(
                 related_ids.append(other)
             parts.append("\n".join(lines))
 
-    # As fases de Tagusari só entram quando a pergunta pede (2026-11-06).
-    with_phases = bool(_PHASES.search(_fold(query)))
     # Só combinações viram lista curta: 8 fichas numa resposta ficavam grandes demais (2026-11-06).
     sheets = [
         sheet
         for tid in ([] if intents == ["combinacao"] else list(dict.fromkeys(base_ids + related_ids))[:_MAX_SHEETS])
-        if (sheet := _sheet(corpus.technique(tid), with_phases))
+        if (sheet := _sheet(corpus.technique(tid)))
     ]
     if sheets:
         parts.append(

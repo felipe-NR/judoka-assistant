@@ -78,15 +78,13 @@ que ela libera vira um item do roadmap.
     (Hiza-guruma, por exemplo) com a direção do kuzushi e o tai-sabaki, sem as três fases
     nomeadas.
   - O site do Kodokan não tem página por técnica, só a lista com os vídeos.
-- **Confirmado:** em 2026-10-28, as seis te-waza do gokyo (Seoi-nage, Tai-otoshi, Kata-guruma,
-  Sukui-nage, Uki-otoshi e Sumi-otoshi), com o texto em português de Tagusari, Santos e Tani
-  (2016), [Análise da complexidade das técnicas de te waza do judô pertencentes ao
-  gokyo](https://doi.org/10.4025/jphyseduc.v27i1.2756), Journal of Physical Education 27, e2756,
-  CC BY 4.0. Estão em `data/fases/tagusari_2016.yaml`, e a resposta as mostra em três passos,
-  com a citação, quando a pergunta cita kuzushi, tsukuri, kake ou as fases da técnica.
-- **Libera:** mais técnicas de nage-waza em três passos, no mesmo formato. O katame-waza não
-  segue essa sequência. Com a maior parte das técnicas coberta, a abertura de Técnicas em
-  `src/judo_chat/static/index.html` pode voltar a citar as três fases.
+- **Removido:** em 2026-11-07, as fases das seis te-waza do gokyo, com o texto de Tagusari, Santos
+  e Tani (2016), [Análise da complexidade das técnicas de te waza do judô pertencentes ao
+  gokyo](https://doi.org/10.4025/jphyseduc.v27i1.2756), CC BY 4.0, saíram da base. A base não
+  tem fases por técnica, e o arquivo está no histórico do git, no commit `9574597`.
+- **Libera:** kuzushi, tsukuri e kake por técnica, se o projeto voltar a querer essa divisão. O
+  katame-waza não segue essa sequência. Com a maior parte das técnicas coberta, a abertura de
+  Técnicas em `src/judo_chat/static/index.html` pode voltar a citar as três fases.
 - **Desde:** 2026-10-28.
 
 ## Confirmadas
