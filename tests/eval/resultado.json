@@ -1,6 +1,6 @@
 {
   "data": "2026-11-06",
-  "commit": "7775db5657516adb4159f612801d976c03d4722e",
+  "commit": "deb750be073f998ce53a955fe124602b9b347970",
   "provedor": "openai",
   "guardrail_api": "decisions",
   "guardrail_model": "gpt-6-luna",
@@ -12,10 +12,10 @@
     "falso_aceite_adversarial": 0,
     "falsa_recusa": 0.0,
     "categoria_exata": 0.9700598802395209,
-    "respostas_com_todos_os_termos": 0.9846153846153847,
+    "respostas_com_todos_os_termos": 0.9923076923076923,
     "falhas_do_guardrail": 0,
     "respostas_indisponiveis": 0,
-    "respostas_sem_cache": 1,
-    "guardrail_latencia_mediana_s": 0.32449957900098525
+    "respostas_sem_cache": 0,
+    "guardrail_latencia_mediana_s": 0.3197723019984551
   }
 }
