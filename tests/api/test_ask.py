@@ -161,6 +161,14 @@ def test_combination_answer_only_brings_the_videos_of_the_question(client: TestC
     assert [g["technique"] for g in body["video_groups"]] == ["Ouchi-gari"]
 
 
+def test_video_groups_carry_the_missing_kodokan_flag(client: TestClient, answerer: FakeAnswerer) -> None:
+    app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
+    answerer.text = "O Yagura-nage é uma projeção."
+    body = client.post("/api/perguntar", json={"query": "o que é yagura nage?"}).json()
+    group = next(g for g in body["video_groups"] if g["technique"] == "Yagura-nage")
+    assert group["kodokan_missing"] is True
+
+
 def test_video_groups_carry_the_fgj_kanji(client: TestClient, answerer: FakeAnswerer) -> None:
     app.dependency_overrides[get_guardrail] = lambda: FakeGuardrail("tecnica")
     answerer.text = "### Seoi-nage\nTexto."

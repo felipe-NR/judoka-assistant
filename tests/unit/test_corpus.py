@@ -34,10 +34,12 @@ def test_unrelated_video_is_removed(corpus: Corpus) -> None:
 
 def test_kodokan_videos_cover_the_official_list(corpus: Corpus) -> None:
     with_kodokan = [t for t in corpus.techniques if any(v.source == "kodokan" for v in t.videos)]
-    # 100 técnicas oficiais na lista da FECJU; o Sasae-tsurikomi-ashi não tem vídeo lá e o link
-    # do Osoto-guruma aponta para o vídeo do O-guruma.
-    assert len(with_kodokan) == 98
-    assert corpus.technique("osoto-guruma").videos[0].source == "outro"
+    # 100 técnicas oficiais na lista da FECJU. O Sasae-tsurikomi-ashi não tem vídeo lá e o link do
+    # Osoto-guruma aponta para o vídeo do O-guruma: os dois entraram à parte, do canal do Kodokan
+    # (2026-11-06).
+    assert len(with_kodokan) == 100
+    assert corpus.technique("sasae-tsurikomi-ashi").videos[0].source == "kodokan"
+    assert corpus.technique("osoto-guruma").videos[0].source == "kodokan"
     assert corpus.technique("o-guruma").videos[0].source == "kodokan"
 
 

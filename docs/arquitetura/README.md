@@ -159,7 +159,7 @@ detecta mudança de prompt ou de modelo: nesses casos, rode a avaliação de nov
 - **Vídeos:** depois da resposta, o reconhecedor acha as técnicas apresentadas (títulos e
   itens) e a API devolve os vídeos em `video_groups`: o do Kodokan ou, só quando ele não existe,
   o de outra fonte. A página os põe embaixo da seção de cada técnica e, no segundo caso, avisa
-  que a base não tem o vídeo do Kodokan mapeado.
+  que a base não tem o vídeo do Kodokan mapeado. Categorias e conceitos não mostram esse aviso.
 - **Kanji e pronúncia:** cada grupo de `video_groups` traz o kanji da ficha da FGJ e a
   pronúncia gerada por `pronunciation.py` com as regras de `data/fgj/pronuncia.yaml`, sem
   marcar a tônica. A página mostra a pronúncia acima dos vídeos; o kanji vai numa coluna ao
