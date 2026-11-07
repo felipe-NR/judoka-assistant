@@ -202,6 +202,14 @@ def test_history_goes_as_data_before_the_question(corpus: Corpus) -> None:
     assert message.count("<pergunta>") == 1 and message.count("</pergunta>") == 1
 
 
+def test_instructions_keep_relations_short_and_without_the_series_number(corpus: Corpus) -> None:
+    # "3.ª série" e as traduções entre parênteses só alongavam a lista (2026-11-06).
+    text = build_system_text(corpus)
+    assert "sem tradução entre parênteses" in text
+    assert "Não cite o número de uma série" in text
+    assert "sequências de renraku-henka-waza cobradas nos exames de faixa" in text
+
+
 def test_instructions_keep_the_naming_rules(corpus: Corpus) -> None:
     # Regressão: uma edição do prompt já apagou este bloco sem que nenhum teste percebesse.
     text = build_system_text(corpus)
