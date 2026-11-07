@@ -35,9 +35,26 @@ resultado no mesmo PR. O `docs.yml` roda o `tests/docs` em PR, sem rede, e apont
 desalinhados; ele fica fora do deploy para não travar a produção e não detecta mudança de prompt
 ou de modelo.
 
+## Dados gerados
+
+Arquivo gerado não se edita à mão. O `data/glossario/tecnicas.yaml` sai do
+`scripts/build_glossary.py`, e `data/fgj/*.yaml`, do `scripts/import_fgj.py`; a tabela de
+`docs/dados.md` diz o que é gerado. Mude a fonte ou o script, gere de novo e confira no
+`git diff` que nada se perdeu. No PR #49, dois vídeos do Kodokan entraram só no
+`tecnicas.yaml`, e o build seguinte os apagaria.
+
+## Documentação
+
+Mudança no que a resposta traz (formato, fichas, relações, vídeos, avisos) ou nos dados
+atualiza, no mesmo PR, a seção "Como funciona" do `README.md` e os docs que descrevem o ponto.
+Antes de abrir o PR, procure o termo afetado em `README.md` e `docs/`: o `tests/docs` só confere
+números. Na auditoria de 2026-11-07, o README, `docs/dados.md` e `docs/validacoes-externas.md`
+estavam desatualizados depois dos PRs #46 a #50.
+
 ## Arquitetura
 
 Os diagramas de `docs/arquitetura/` mostram o prompt e o corte do cache, o caminho de uma
 pergunta, a carga do corpus e onde a API roda. Mudança que altere algum desses pontos atualiza
 os diagramas no mesmo PR: edite `scripts/diagramas_arquitetura.py`, gere os HTML de novo e
-exporte os PNG, como descreve `docs/arquitetura/README.md`.
+exporte os PNG, como descreve `docs/arquitetura/README.md`. Quando o PR muda o comportamento da
+API e nenhum diagrama muda, a descrição do PR diz por quê.
