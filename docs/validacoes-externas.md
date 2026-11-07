@@ -91,9 +91,10 @@ que ela libera vira um item do roadmap.
 
 ### Vídeos do Kodokan
 
-98 técnicas têm vídeo do canal do Kodokan, listado primeiro (2026-10-05). Na FECJU, o link do
-Osoto-guruma aponta para o vídeo do O-guruma e o do Sasae-tsurikomi-ashi não é vídeo; essas
-duas ficam só com o vídeo do CSV do bot.
+As 100 técnicas oficiais têm vídeo do canal do Kodokan, listado primeiro. 98 vêm da lista da
+FECJU (2026-10-05). Nela, o link do Osoto-guruma aponta para o vídeo do O-guruma e o do
+Sasae-tsurikomi-ashi não é vídeo; os vídeos do Kodokan dessas duas entraram em 2026-11-07 (PR
+#49), em `KODOKAN_EXTRA` do `scripts/build_glossary.py`.
 
 ### Vídeo sem relação com judô
 

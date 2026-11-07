@@ -11,7 +11,7 @@ o que ainda falta confirmar com fontes externas estão em
 | `data/glossario/termos_regras.yaml` | Termos de regras, arbitragem e graduação que o guardrail recebe; cada um precisa aparecer no documento indicado | Sim |
 | `data/regras/*.md`, `data/historia/*.md` | Textos de regras e história | Sim |
 | `data/graduacao/*.md` | Exames de faixa (cinza a marrom), Gokyo, sequências e contragolpes, do Projeto Budô | Sim |
-| `docs/fontes/fecju_kodokan_videos.csv` | Vídeos do canal do Kodokan listados pela FECJU | Sim |
+| `docs/fontes/fecju_kodokan_videos.csv` | Vídeos do canal do Kodokan listados pela FECJU; os que faltam nela ficam em `KODOKAN_EXTRA`, no `scripts/build_glossary.py` | Sim |
 | `data/fgj/*.yaml` | Fonte primária: tradução, descrição Kodokan, princípio, kyo-grupo e kanji das 100 técnicas, glossário e pronúncia da FGJ | Não, gerado por `scripts/import_fgj.py` |
 | `data/glossario/tecnicas.yaml` | Glossário final | Não, é gerado |
 

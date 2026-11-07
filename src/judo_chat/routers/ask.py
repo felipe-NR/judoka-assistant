@@ -8,6 +8,7 @@ from judo_chat.answer import (
     Turn,
     detect_intents,
     fgj_quotes_intact,
+    is_short_list,
     video_groups,
 )
 from judo_chat.dependencies import (
@@ -68,8 +69,8 @@ async def ask(
     if not matches and verdict.continuation:
         matches = last_matches
     answer = await answerer.answer(body.query, matches, history, terms)
-    # A lista curta de combinações não traz fichas nem os vídeos de cada golpe (2026-11-06).
-    short_list = detect_intents(body.query) == ["combinacao"]
+    # A lista curta de combinações e contragolpes não traz fichas nem os vídeos de cada golpe.
+    short_list = is_short_list(detect_intents(body.query))
     groups = [] if answer.refused else video_groups(answer.text, matches, recognizer, corpus, only_question=short_list)
     if not short_list:
         for technique_id, intact in fgj_quotes_intact(answer.text, groups, corpus).items():
