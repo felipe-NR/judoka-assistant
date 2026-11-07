@@ -155,12 +155,11 @@ _INTENTS: dict[RelationKind, re.Pattern[str]] = {
         r"contra[\s-]?(golpe|ataq|atac)|gaeshi|kaeshi|revid|defend|defes|neutraliz|anula|revers|sukashi"
     ),
     "variacao": re.compile(r"varia|versao|versoes|deriva|parecid|semelhan|modificad|kuzure"),
-    "combinacao": re.compile(r"combina|sequencia|renraku|emend|encade|ligar com|seguid"),
+    "combinacao": re.compile(r"combin|sequencia|renraku|emend|encade|ligar com|seguid"),
 }
 _ORIGINS = {
     "FGJ": "FGJ",
     "nome": "pelo nome",
-    "Projeto Budô": "série do Projeto Budô",
 }
 _PRONUNCIATION = re.compile(r"\bpron\S*nci")
 _MAX_SHEETS = 6

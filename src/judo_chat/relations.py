@@ -24,6 +24,7 @@ _FGJ_COUNTER = re.compile(
 )
 _FGJ_LIKE = re.compile(r"como de um ([A-Za-zÀ-ú-]+)")
 _SERIES_LINE = re.compile(r"^- \d+ – (.+)$")
+_SERIES_TITLE = re.compile(r"^\*\*(\d+\.ª) Série\*\*$")
 _COUNTER_SUFFIXES = ("gaeshi", "sukashi")
 
 
@@ -92,7 +93,11 @@ def _from_series(corpus: Corpus, recognizer: Recognizer) -> Iterable[Relation]:
             kind = "combinacao"
         else:
             continue
+        # O número vai na relação: sem ele, o modelo trocava a série (2026-11-06).
+        origin = "série do Projeto Budô"
         for line in document.body.splitlines():
+            if title := _SERIES_TITLE.match(line.strip()):
+                origin = f"{title.group(1)} série do Projeto Budô"
             match = _SERIES_LINE.match(line.strip())
             if not match:
                 continue
@@ -101,7 +106,7 @@ def _from_series(corpus: Corpus, recognizer: Recognizer) -> Iterable[Relation]:
                 for source in first:
                     for target in second:
                         if source != target:
-                            yield Relation(source, target, kind, "Projeto Budô")
+                            yield Relation(source, target, kind, origin)
 
 
 class Relations:

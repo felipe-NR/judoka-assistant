@@ -161,9 +161,22 @@ def test_counter_question_attaches_related_sheets(corpus: Corpus, recognizer: Re
     message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
     assert "Relações da base para o Uchi-mata:" in message
     assert "- Uchi-mata-gaeshi: contragolpe do Uchi-mata (fonte: FGJ, pelo nome)" in message
-    assert "- Tai-otoshi: contragolpe do Uchi-mata (fonte: série do Projeto Budô)" in message
+    assert "- Tai-otoshi: contragolpe do Uchi-mata (fonte: 3.ª série do Projeto Budô)" in message
     for name in ("[Uchi-mata-gaeshi]", "[Uchi-mata-sukashi]", "[Tai-otoshi]"):
         assert name in message
+
+
+def test_combination_question_attaches_the_series_number(corpus: Corpus, recognizer: Recognizer) -> None:
+    from judo_chat.relations import Relations
+
+    # "combino" ficava fora da intenção e a pergunta ia sem as relações (2026-11-06).
+    query = "Com que golpe combino o ouchi gari?"
+    message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
+    assert "- Ouchi-gari seguido de Tai-otoshi: combinação (fonte: 2.ª série do Projeto Budô)" in message
+    assert (
+        "- Ouchi-gari seguido de Uchi-mata: combinação (fonte: 4.ª série do Projeto Budô, 5.ª série do Projeto Budô)"
+        in message
+    )
 
 
 def test_history_goes_as_data_before_the_question(corpus: Corpus) -> None:
