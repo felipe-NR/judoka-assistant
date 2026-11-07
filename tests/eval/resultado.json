@@ -1,6 +1,6 @@
 {
   "data": "2026-11-07",
-  "commit": "325035795c9b5599d545c08331b6ec6cab76ea33",
+  "commit": "6b852f54bb93d491a39ab1752e0b7a12033711b4",
   "provedor": "openai",
   "guardrail_api": "decisions",
   "guardrail_model": "gpt-6-luna",
@@ -16,6 +16,6 @@
     "falhas_do_guardrail": 0,
     "respostas_indisponiveis": 0,
     "respostas_sem_cache": 0,
-    "guardrail_latencia_mediana_s": 0.30620624600123847
+    "guardrail_latencia_mediana_s": 0.29420572399976663
   }
 }
