@@ -108,6 +108,7 @@
   .technique-meta .kanji-inline { font: 800 1.5rem/1 "Shippori Mincho B1", serif; letter-spacing: .04em; color: var(--blue); }
   .say { font-size: .9rem; color: var(--muted); }
   .say b { color: var(--blue); letter-spacing: .04em; }
+  .video-note { margin: 0; font-size: .9rem; color: var(--muted); }
   .videos strong { font: 800 1.05rem "Shippori Mincho B1", serif; }
   .msg.bot a.video { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; border-radius: 8px;
        border: 2px solid var(--blue); color: var(--blue); text-decoration: none; font-weight: 700; line-height: 1.3; }
@@ -266,6 +267,16 @@
     return a;
   }
 
+  // Vídeos da técnica e, quando nenhum é do Kodokan, o aviso de que a base não tem esse mapeado.
+  function appendVideos(box, group) {
+    for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
+    if (group.videos.some((video) => video.kodokan)) return;
+    const note = document.createElement("p");
+    note.className = "video-note";
+    note.textContent = `A base não tem o vídeo do Kodokan mapeado para ${group.technique}.`;
+    box.appendChild(note);
+  }
+
   // Linha com o kanji e a pronúncia acima dos vídeos da técnica. Fica vazia (null) quando
   // não há o que mostrar.
   function techniqueMeta(group, showKanji) {
@@ -305,7 +316,7 @@
       box.className = "video-inline";
       const meta = techniqueMeta(group, showKanji);
       if (meta) box.appendChild(meta);
-      for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
+      appendVideos(box, group);
       if (target.tagName === "LI") target.appendChild(box); else target.after(box);
     }
     if (!leftovers.length) return;
@@ -314,9 +325,7 @@
     const title = document.createElement("strong");
     title.textContent = "Vídeos";
     box.appendChild(title);
-    for (const group of leftovers) {
-      for (const video of group.videos) box.appendChild(videoLink(video, group.technique));
-    }
+    for (const group of leftovers) appendVideos(box, group);
     body.appendChild(box);
   }
 

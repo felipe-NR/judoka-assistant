@@ -177,6 +177,15 @@ def test_combination_question_attaches_the_series_number(corpus: Corpus, recogni
         "- Ouchi-gari seguido de Uchi-mata: combinação (fonte: 4.ª série do Projeto Budô, 5.ª série do Projeto Budô)"
         in message
     )
+    assert "Fichas das técnicas citadas" not in message
+
+
+def test_combination_and_counter_question_keeps_the_sheets(corpus: Corpus, recognizer: Recognizer) -> None:
+    from judo_chat.relations import Relations
+
+    query = "quais combinações e contragolpes do uchi mata?"
+    message = build_user_message(query, recognizer.find(query), corpus, Relations(corpus, recognizer))
+    assert "Fichas das técnicas citadas" in message
 
 
 def test_history_goes_as_data_before_the_question(corpus: Corpus) -> None:
@@ -198,6 +207,14 @@ def test_instructions_keep_the_naming_rules(corpus: Corpus) -> None:
     text = build_system_text(corpus)
     for rule in ("nome popular", "ambíguo", "Juji-gatame", "proibida em competição", "Não escreva links de vídeo"):
         assert rule in text, rule
+
+
+def test_video_groups_only_use_another_source_without_the_kodokan_video(corpus: Corpus, recognizer: Recognizer) -> None:
+    from judo_chat.answer import video_groups
+
+    groups = video_groups("Osoto-gari e Yagura-nage", [], recognizer, corpus)
+    videos = {g.technique: [v.kodokan for v in g.videos] for g in groups}
+    assert videos == {"Osoto-gari": [True], "Yagura-nage": [False]}
 
 
 def test_video_groups_cover_every_presented_technique(corpus: Corpus, recognizer: Recognizer) -> None:

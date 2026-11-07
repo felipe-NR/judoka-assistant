@@ -63,9 +63,12 @@ Descrição das técnicas (fonte primária: Curso de Waza da Federação Gaúcha
   três fases depois da descrição da FGJ, uma por item, sem alterar o texto, com o rótulo
   **Kuzushi, tsukuri e kake (Tagusari, Santos e Tani, 2016):** e o aviso de que o artigo
   descreve a forma do kata. Sem essas linhas, não divida a técnica em fases.
-- Quando a pergunta pedir contragolpes, variações ou combinações, use as "Relações da
-  base" anexadas: apresente cada técnica relacionada num título ou item próprio, com a
-  ficha dela e a fonte da relação (FGJ, nome da técnica ou série do Projeto Budô).
+- Quando a pergunta pedir contragolpes ou variações, use as "Relações da base" anexadas:
+  apresente cada técnica relacionada num título ou item próprio, com a ficha dela e a fonte
+  da relação (FGJ, nome da técnica ou série do Projeto Budô).
+- Quando a pergunta pedir só combinações, use as "Relações da base" anexadas e responda em
+  lista curta, sem descrição nem princípio da FGJ: um item por combinação, com o golpe que
+  emenda, a tradução da FGJ e a série. Termine oferecendo detalhar uma delas.
 - Quando houver histórico da conversa, use-o para entender a pergunta ("não é esse", "e o
   outro?"), mas responda só com a base.
 - Dê também a "Tradução (FGJ)", o "Significado literal", o kanji e o kyo-grupo quando
@@ -270,9 +273,10 @@ def build_user_message(
                 related_ids.append(other)
             parts.append("\n".join(lines))
 
+    # Só combinações viram lista curta: 8 fichas numa resposta ficavam grandes demais (2026-11-06).
     sheets = [
         sheet
-        for tid in list(dict.fromkeys(base_ids + related_ids))[:_MAX_SHEETS]
+        for tid in ([] if intents == ["combinacao"] else list(dict.fromkeys(base_ids + related_ids))[:_MAX_SHEETS])
         if (sheet := _sheet(corpus.technique(tid)))
     ]
     if sheets:
@@ -327,7 +331,11 @@ def _is_headline(line: str, term: str) -> bool:
 
 
 def video_groups(
-    answer_text: str, question_matches: list[Match], recognizer: Recognizer, corpus: Corpus
+    answer_text: str,
+    question_matches: list[Match],
+    recognizer: Recognizer,
+    corpus: Corpus,
+    only_question: bool = False,
 ) -> list[VideoGroup]:
     """Vídeos das técnicas que a resposta apresenta, cada grupo preso ao título ou item onde a
     técnica aparece. A API anexa os vídeos em vez de pedir ao modelo, que omitia links; e
@@ -349,13 +357,18 @@ def video_groups(
                 mentioned.append(technique_id)
             first_in_line = False
     question_ids = [tid for match in question_matches for tid in match.technique_ids]
+    if only_question:
+        anchored = {tid: term for tid, term in anchored.items() if tid in question_ids}
+        mentioned = []
     order = list(dict.fromkeys([*anchored, *question_ids, *mentioned]))
     groups = []
     for technique_id in order:
         technique = corpus.technique(technique_id)
         if not technique.videos:
             continue
-        videos = tuple(TechniqueVideo(v.url, v.source == "kodokan") for v in technique.videos)
+        # Vídeo de outra fonte só quando não há o do Kodokan; a página avisa nesse caso (2026-11-06).
+        kodokan = [v for v in technique.videos if v.source == "kodokan"]
+        videos = tuple(TechniqueVideo(v.url, v.source == "kodokan") for v in kodokan or technique.videos)
         kanji = technique.fgj.kanji if technique.fgj else None
         spoken = pronounce(technique.fgj.tecnica) if technique.fgj else None
         groups.append(VideoGroup(technique_id, technique.name, anchored.get(technique_id), videos, kanji, spoken))
